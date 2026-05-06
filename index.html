@@ -3,91 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EMS POS v2.0 | Enterprise</title>
+    <title>EMS TOTAL v2.0 | Enterprise</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Plus+Jakarta+Sans:wght@300;600;800&display=swap');
-        :root { --blue: #3b82f6; --dark: #030508; --card: #0c0f17; }
+        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Plus+Jakarta+Sans:wght@400;800&display=swap');
+        :root { --blue: #3b82f6; --dark: #020408; --card: #0b0f1a; }
         body { background: var(--dark); color: #f1f5f9; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .ems-glass { background: var(--card); border: 1px solid rgba(255,255,255,0.04); border-radius: 28px; }
-        .auth-input { background: #11141d; border: 1px solid #1e293b; padding: 1.25rem; border-radius: 1rem; width: 100%; outline: none; transition: 0.3s; }
-        .auth-input:focus { border-color: var(--blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.1); }
-        .btn-main { background: var(--blue); padding: 1.25rem; border-radius: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; width: 100%; }
-        .btn-main:active { transform: scale(0.97); }
-        .tab-active { background: var(--blue) !important; color: white !important; }
+        .ems-glass { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; }
+        .ems-input { background: #121826; border: 1px solid #1e293b; padding: 1.25rem; border-radius: 1rem; width: 100%; outline: none; font-weight: 600; color: white; transition: 0.3s; }
+        .ems-input:focus { border-color: var(--blue); box-shadow: 0 0 20px rgba(59, 130, 246, 0.1); }
+        .btn-primary { background: var(--blue); padding: 1.25rem; border-radius: 1rem; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.1em; transition: 0.3s; width: 100%; }
+        .btn-primary:active { transform: scale(0.98); }
+        .tab-active { background: var(--blue) !important; color: white !important; box-shadow: 0 8px 20px rgba(59,130,246,0.3); }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4 md:p-8">
 
-    <div id="authScreen" class="fixed inset-0 z-[999] bg-[#030508] flex items-center justify-center p-6">
-        <div class="ems-glass p-10 max-w-md w-full border-t-8 border-blue-600 shadow-2xl">
-            <div class="text-center mb-8">
-                <h1 style="font-family: 'Syncopate';" class="text-3xl font-bold tracking-tighter text-white">EMS<span class="text-blue-500">POS</span></h1>
-                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.4em] mt-2">v2.0 İşletme Yetkilendirme</p>
-            </div>
-
+    <div id="authScreen" class="fixed inset-0 z-[1000] bg-[#020408] flex items-center justify-center p-6">
+        <div class="ems-glass p-10 max-w-md w-full border-t-8 border-blue-600 shadow-2xl text-center">
+            <h1 style="font-family: 'Syncopate';" class="text-3xl font-bold tracking-tighter text-white mb-2">EMS<span class="text-blue-500">POS</span></h1>
+            <p class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.4em] mb-10">İşletme Yetkilendirme Sistemi</p>
+            
             <div class="space-y-4">
-                <input type="email" id="email" placeholder="E-posta Adresi" class="auth-input">
-                <input type="password" id="password" placeholder="Şifre" class="auth-input">
+                <input type="email" id="email" placeholder="İşletme E-postası" class="ems-input">
+                <input type="password" id="password" placeholder="Şifre" class="ems-input">
                 
-                <div id="registerFields" class="hidden space-y-4">
-                    <select id="sector" class="auth-input text-blue-400 font-bold">
-                        <option value="Market">Market (Hızlı Satış)</option>
-                        <option value="Restoran">Restoran (Masa Planı)</option>
-                        <option value="Manav">Manav (Terazi Destekli)</option>
+                <div class="text-left space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Sektör Seçimi (İlk Kayıt İçin)</label>
+                    <select id="sectorSelect" class="ems-input text-blue-400">
+                        <option value="Market">Market Modu</option>
+                        <option value="Restoran">Restoran Modu</option>
+                        <option value="Manav">Manav (Terazi) Modu</option>
                     </select>
                 </div>
 
-                <button id="authBtn" onclick="handleAuth()" class="btn-main">Giriş Yap</button>
-                <p id="toggleAuth" onclick="toggleMode()" class="text-center text-[10px] text-blue-500 font-bold mt-4 cursor-pointer hover:underline uppercase">Hesabınız yok mu? Kayıt Olun</p>
+                <button onclick="handleAuth()" class="btn-primary">SİSTEME GİRİŞ YAP / KAYDOL</button>
             </div>
-            <p class="mt-8 text-[9px] text-slate-700 text-center font-bold uppercase tracking-widest leading-loose">Software by Emirhan Bozdayı<br>Osmaniye / Kadirli</p>
+            <p class="mt-10 text-[9px] text-slate-700 font-bold uppercase tracking-widest leading-loose">Software by Emirhan Bozdayı<br>Osmaniye / Kadirli</p>
         </div>
     </div>
 
-    <div id="mainUI" class="hidden opacity-0 transition-opacity duration-700">
-        <header class="flex justify-between items-center mb-6 px-2">
+    <div id="mainUI" class="hidden opacity-0 transition-opacity duration-1000">
+        <header class="flex justify-between items-center mb-8 px-2">
             <div>
-                <h2 style="font-family: 'Syncopate';" class="text-lg font-bold tracking-tighter italic">EMS<span class="text-blue-500">TOTAL</span></h2>
-                <p id="infoDisplay" class="text-[8px] font-black text-slate-500 uppercase tracking-widest"></p>
+                <h2 style="font-family: 'Syncopate';" class="text-xl font-bold italic">EMS<span class="text-blue-500">TOTAL</span></h2>
+                <div class="flex items-center gap-2 mt-1"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span><p id="statusTxt" class="text-[9px] font-black text-slate-500 uppercase tracking-widest"></p></div>
             </div>
             <div class="text-right">
-                <p id="clock" class="text-xl font-black text-white">00:00</p>
-                <button onclick="logout()" class="text-[9px] text-red-500 font-bold uppercase underline">Oturumu Kapat</button>
+                <p id="clock" class="text-2xl font-black text-white">00:00</p>
+                <button onclick="logout()" class="text-[10px] text-red-500 font-bold uppercase underline tracking-tighter">Oturumu Kapat</button>
             </div>
         </header>
 
         <nav class="grid grid-cols-4 gap-2 mb-8">
-            <button onclick="nav('kasa')" id="n-kasa" class="ems-glass p-4 flex flex-col items-center gap-2 tab-active"><i class="fa-solid fa-cash-register"></i><span class="text-[8px] font-bold uppercase">Kasa</span></button>
-            <button onclick="nav('masa')" id="n-masa" class="ems-glass p-4 flex flex-col items-center gap-2 text-slate-600"><i class="fa-solid fa-table-cells"></i><span class="text-[8px] font-bold uppercase">Masa</span></button>
-            <button onclick="nav('stok')" id="n-stok" class="ems-glass p-4 flex flex-col items-center gap-2 text-slate-600"><i class="fa-solid fa-box"></i><span class="text-[8px] font-bold uppercase">Stok</span></button>
-            <button onclick="nav('cari')" id="n-cari" class="ems-glass p-4 flex flex-col items-center gap-2 text-slate-600"><i class="fa-solid fa-user-tag"></i><span class="text-[8px] font-bold uppercase">Cari</span></button>
+            <button onclick="nav('kasa')" id="n-kasa" class="ems-glass p-5 flex flex-col items-center gap-2 tab-active"><i class="fa-solid fa-cash-register text-lg"></i><span class="text-[9px] font-black uppercase">Kasa</span></button>
+            <button onclick="nav('masa')" id="n-masa" class="ems-glass p-5 flex flex-col items-center gap-2 text-slate-600"><i class="fa-solid fa-table-list text-lg"></i><span class="text-[9px] font-black uppercase">Masa</span></button>
+            <button onclick="nav('stok')" id="n-stok" class="ems-glass p-5 flex flex-col items-center gap-2 text-slate-600"><i class="fa-solid fa-boxes-stacked text-lg"></i><span class="text-[9px] font-black uppercase">Stok</span></button>
+            <button onclick="nav('cari')" id="n-cari" class="ems-glass p-5 flex flex-col items-center gap-2 text-slate-600"><i class="fa-solid fa-user-clock text-lg"></i><span class="text-[9px] font-black uppercase">Cari</span></button>
         </nav>
 
-        <main id="view-container">
-            <div id="v-kasa" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div class="lg:col-span-7">
-                    <div class="ems-glass p-2 mb-4 overflow-hidden border border-blue-500/10 shadow-2xl"><div id="qr-reader"></div></div>
+        <main>
+            <div id="v-kasa" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="ems-glass p-2 border border-blue-500/10 shadow-2xl overflow-hidden"><div id="reader"></div></div>
                     <div class="flex gap-2">
-                        <input id="barcodeIn" type="text" placeholder="Barkod..." class="auth-input text-xl flex-grow">
-                        <button onclick="scanAdd()" class="bg-blue-600 px-10 rounded-2xl font-black text-xs">EKLE</button>
+                        <input id="barcodeIn" type="text" placeholder="Barkod Okutun..." class="ems-input text-2xl flex-grow">
+                        <button onclick="handleScan()" class="bg-blue-600 px-12 rounded-2xl font-black text-xs">OKUT</button>
                     </div>
                 </div>
-                <div class="lg:col-span-5 ems-glass p-6 flex flex-col h-[550px] border-t-4 border-blue-600">
-                    <h3 class="font-black italic mb-4 text-xs tracking-widest text-slate-500">İŞLEM LİSTESİ</h3>
-                    <div id="cart" class="flex-grow overflow-y-auto space-y-2 mb-4 pr-1"></div>
-                    <div class="border-t border-slate-800 pt-4">
-                        <div class="flex justify-between items-center mb-6">
-                            <span class="text-[10px] font-bold text-slate-500">TOPLAM</span>
-                            <span id="totalVal" class="text-3xl font-black text-green-400">₺0.00</span>
+                <div class="lg:col-span-5 ems-glass p-8 flex flex-col h-[600px] border-t-8 border-blue-600">
+                    <h3 class="font-black italic mb-6 tracking-widest text-slate-500 uppercase text-xs">Aktif İşlemler</h3>
+                    <div id="cartBody" class="flex-grow overflow-y-auto space-y-3 pr-2"></div>
+                    <div class="mt-6 pt-6 border-t border-slate-800">
+                        <div class="flex justify-between items-end mb-6 font-black"><span class="text-slate-500 text-[10px]">TOPLAM TUTAR</span><span id="totalDisplay" class="text-4xl text-green-400">₺0.00</span></div>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <button onclick="pay('Nakit')" class="bg-emerald-600 p-5 rounded-2xl font-black text-xs shadow-lg">NAKİT</button>
+                            <button onclick="pay('Kart')" class="bg-sky-600 p-5 rounded-2xl font-black text-xs shadow-lg">KART</button>
                         </div>
-                        <button onclick="pay()" class="btn-main bg-emerald-600">SATIŞI ONAYLA</button>
+                        <button onclick="pay('Veresiye')" class="w-full bg-orange-600 p-5 rounded-2xl font-black text-[10px] tracking-widest uppercase">Veresiye Kaydet</button>
                     </div>
                 </div>
             </div>
-            
+
             <div id="v-masa" class="hidden grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
         </main>
     </div>
@@ -98,7 +97,7 @@
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyD-YOUR-KEY", // Kendi Firebase Key'in
+            apiKey: "AIzaSyD-SANA_OZEL_KEY",
             authDomain: "ems-pos-b6c2c.firebaseapp.com",
             projectId: "ems-pos-b6c2c",
             storageBucket: "ems-pos-b6c2c.appspot.com",
@@ -109,40 +108,41 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        window.cart = [];
 
-        let isLoginMode = true;
-
-        window.toggleMode = () => {
-            isLoginMode = !isLoginMode;
-            document.getElementById('registerFields').classList.toggle('hidden');
-            document.getElementById('authBtn').innerText = isLoginMode ? 'Giriş Yap' : 'Kayıt Ol';
-            document.getElementById('toggleAuth').innerText = isLoginMode ? 'Hesabınız yok mu? Kayıt Olun' : 'Zaten hesabınız var mı? Giriş Yapın';
-        };
-
+        // --- ASIL AUTH MANTIĞI (16:00-17:00 ARASI YAZILAN) ---
         window.handleAuth = async () => {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
-            const sector = document.getElementById('sector').value;
+            const sector = document.getElementById('sectorSelect').value;
 
             try {
-                if(isLoginMode) {
-                    await signInWithEmailAndPassword(auth, email, pass);
-                } else {
+                // Önce giriş yapmayı dene
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                // Eğer hesap yoksa otomatik kayıt yap
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
                     const res = await createUserWithEmailAndPassword(auth, email, pass);
-                    await setDoc(doc(db, "isletmeler", res.user.uid), { email, sector, date: new Date() });
-                }
-            } catch (err) { alert("Hata: " + err.message); }
+                    await setDoc(doc(db, "isletmeler", res.user.uid), {
+                        email: email,
+                        sektor: sector,
+                        tarih: new Date()
+                    });
+                } else { alert("Hata: " + error.message); }
+            }
         };
 
         onAuthStateChanged(auth, async (user) => {
-            if(user) {
+            if (user) {
                 document.getElementById('authScreen').classList.add('hidden');
                 document.getElementById('mainUI').classList.remove('hidden');
                 setTimeout(() => document.getElementById('mainUI').style.opacity = "1", 50);
                 
+                // İşletme bilgilerini çek
                 const snap = await getDoc(doc(db, "isletmeler", user.uid));
-                const s = snap.exists() ? snap.data().sector : "Market";
-                document.getElementById('infoDisplay').innerText = `İŞLETME: ${user.email} | MOD: ${s}`;
+                const s = snap.exists() ? snap.data().sektor : "Market";
+                document.getElementById('statusTxt').innerText = `İŞLETME: ${user.email} | SEKTÖR: ${s}`;
+                
                 if(s === "Restoran") drawTables();
                 startScanner();
             } else {
@@ -153,31 +153,36 @@
 
         window.logout = () => signOut(auth);
 
-        // BARKOD SİSTEMİ
-        let scanner = new Html5Qrcode("qr-reader");
+        // --- BARKOD & KASA SİSTEMİ ---
+        let scanner = new Html5Qrcode("reader");
         function startScanner() {
-            scanner.start({ facingMode: "environment" }, { fps: 15, qrbox: 250 }, (t) => {
-                document.getElementById('barcodeIn').value = t;
-                scanAdd();
+            scanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (text) => {
+                document.getElementById('barcodeIn').value = text;
+                handleScan();
             });
         }
 
-        window.scanAdd = async () => {
+        window.handleScan = async () => {
             const code = document.getElementById('barcodeIn').value;
+            if(!code) return;
             const snap = await getDoc(doc(db, "urunler", code));
             if(snap.exists()) {
                 const item = snap.data();
-                const div = document.createElement('div');
-                div.className = 'ems-glass p-4 flex justify-between border-l-4 border-blue-500';
-                div.innerHTML = `<span class="font-bold text-[10px] uppercase">${item.ad}</span><span class="font-black text-blue-400">₺${item.fiyat}</span>`;
-                document.getElementById('cart').appendChild(div);
-                updateTotal(item.fiyat);
+                window.cart.push({ n: item.ad, f: item.fiyat });
+                renderCart();
             }
             document.getElementById('barcodeIn').value = "";
         };
 
-        let currentTotal = 0;
-        function updateTotal(p) { currentTotal += parseFloat(p); document.getElementById('totalVal').innerText = "₺" + currentTotal.toFixed(2); }
+        window.renderCart = () => {
+            const body = document.getElementById('cartBody'); body.innerHTML = "";
+            let t = 0;
+            window.cart.forEach(i => {
+                t += i.f;
+                body.innerHTML += `<div class="ems-glass p-4 flex justify-between border-l-4 border-blue-500 font-bold"><span class="text-[10px] uppercase">${i.n}</span><span class="text-blue-400">₺${i.f.toFixed(2)}</span></div>`;
+            });
+            document.getElementById('totalDisplay').innerText = "₺" + t.toFixed(2);
+        };
 
         window.nav = (id) => {
             ['kasa', 'masa', 'stok', 'cari'].forEach(v => {
@@ -190,8 +195,10 @@
 
         window.drawTables = () => {
             const v = document.getElementById('v-masa'); v.innerHTML = "";
-            for(let i=1; i<=12; i++) v.innerHTML += `<div class="ems-glass p-8 flex flex-col items-center gap-1"><span class="text-[8px] font-bold opacity-30">MASA</span><span class="text-xl font-black">${i}</span><span class="text-[8px] text-emerald-500 font-bold uppercase tracking-widest">Boş</span></div>`;
+            for(let i=1; i<=12; i++) v.innerHTML += `<div class="ems-glass p-10 flex flex-col items-center gap-1"><span class="text-[8px] font-bold opacity-30 italic">MASA</span><span class="text-2xl font-black">${i}</span><span class="text-[8px] text-emerald-500 font-bold uppercase tracking-widest">BOŞ</span></div>`;
         };
+
+        window.pay = (m) => { if(window.cart.length > 0) { alert(m + " Satış Başarılı!"); window.cart = []; renderCart(); } };
 
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}); }, 1000);
     </script>
