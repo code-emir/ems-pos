@@ -1,232 +1,164 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<title>EMS ERP - Emirhan Bozdayı</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/xlsx.full.min.js"></script>
-
-<link href="https://fonts.googleapis.com/css2?family=Syncopate&family=Plus+Jakarta+Sans&display=swap" rel="stylesheet">
-
-<style>
-body { font-family: 'Plus Jakarta Sans', sans-serif; background:#0b0f19; color:#fff; }
-.title { font-family:'Syncopate'; }
-.card { background:#111827; border:1px solid #1f2937; border-radius:12px; padding:12px; }
-.neon { color:#00e5ff; }
-button { transition:.2s; }
-button:hover { transform:scale(1.02); }
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMS Global SaaS | Cloud Automation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #e2e8f0; }
+        .glass-card { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .sidebar-btn:hover { background: #1e293b; color: #60a5fa; }
+        .active-nav { background: #1e293b; color: #3b82f6; border-right: 4px solid #3b82f6; }
+    </style>
 </head>
-<body class="p-4">
+<body class="flex h-screen overflow-hidden">
 
-<h1 class="title text-xl neon">EMS ERP SYSTEM</h1>
-<p class="text-xs opacity-60">Software by Emirhan Bozdayı - Tüm Hakları Saklıdır</p>
+    <aside class="w-64 bg-[#020617] border-r border-slate-800 flex flex-col justify-between">
+        <div>
+            <div class="p-8">
+                <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent italic">EMS SaaS MASTER</h1>
+            </div>
+            <nav class="space-y-1 px-4">
+                <button onclick="switchTab('dashboard')" class="sidebar-btn active-nav w-full flex items-center p-4 rounded-xl transition-all" id="nav-dashboard">
+                    <span class="mr-3">📊</span> Dashboard
+                </button>
+                <button onclick="switchTab('cari')" class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all" id="nav-cari">
+                    <span class="mr-3">👥</span> Cari Takip
+                </button>
+                <button onclick="switchTab('stok')" class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all" id="nav-stok">
+                    <span class="mr-3">📦</span> Stok Yönetimi
+                </button>
+            </nav>
+        </div>
+        <div class="p-6 border-t border-slate-800">
+            <div class="flex items-center space-x-3">
+                <div id="status-dot" class="w-2.5 h-2.5 bg-yellow-500 rounded-full animate-pulse"></div>
+                <span id="status-text" class="text-xs text-slate-400 font-medium tracking-wider">BULUT BAĞLANTISI...</span>
+            </div>
+        </div>
+    </aside>
 
-<!-- LOGIN -->
-<div id="auth" class="card mt-4">
-  <input id="email" placeholder="Email" class="w-full p-2 bg-gray-800 mb-2">
-  <input id="pass" type="password" placeholder="Şifre" class="w-full p-2 bg-gray-800 mb-2">
+    <main class="flex-1 flex flex-col">
+        <header class="h-16 flex items-center justify-between px-10 border-b border-slate-800 bg-[#020617]/80 backdrop-blur-md sticky top-0 z-10">
+            <h2 id="header-title" class="text-lg font-semibold tracking-wide">Genel Durum</h2>
+            <div class="flex items-center space-x-6">
+                <button onclick="toggleAddModal()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-lg shadow-blue-900/20">
+                    + Yeni Kayıt
+                </button>
+                <div class="h-8 w-px bg-slate-800"></div>
+                <span class="text-sm font-medium text-slate-400 italic">User: emirhan_bozdayi</span>
+            </div>
+        </header>
 
-  <select id="sector" class="w-full p-2 bg-gray-800 mb-2">
-    <option value="market">Market</option>
-    <option value="restoran">Restoran</option>
-    <option value="manav">Manav</option>
-  </select>
+        <div id="content-scroll" class="flex-1 overflow-y-auto p-10 space-y-8">
+            
+            <section id="sec-dashboard" class="space-y-8 animate-in fade-in duration-500">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
+                        <p class="text-slate-400 text-sm font-medium">Toplam Alacak</p>
+                        <h3 id="total-debt" class="text-4xl font-bold text-red-500 mt-2">₺0,00</h3>
+                        <div class="absolute -right-4 -bottom-4 text-6xl opacity-5 grayscale group-hover:grayscale-0 transition-all">💸</div>
+                    </div>
+                    <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
+                        <p class="text-slate-400 text-sm font-medium">Stoktaki Ürün</p>
+                        <h3 id="total-stock" class="text-4xl font-bold text-emerald-500 mt-2">0 Adet</h3>
+                        <div class="absolute -right-4 -bottom-4 text-6xl opacity-5 grayscale group-hover:grayscale-0 transition-all">📦</div>
+                    </div>
+                    <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
+                        <p class="text-slate-400 text-sm font-medium">Günlük Tahsilat</p>
+                        <h3 class="text-4xl font-bold text-blue-500 mt-2">₺0,00</h3>
+                        <div class="absolute -right-4 -bottom-4 text-6xl opacity-5 grayscale group-hover:grayscale-0 transition-all">📈</div>
+                    </div>
+                </div>
+            </section>
 
-  <button onclick="register()" class="bg-blue-600 w-full p-2 mb-2">Kayıt Ol</button>
-  <button onclick="login()" class="bg-green-600 w-full p-2">Giriş</button>
-</div>
+            <section id="sec-cari" class="hidden space-y-4 animate-in slide-in-from-bottom-4 duration-500">
+                <div class="glass-card rounded-3xl overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-800/30">
+                            <tr>
+                                <th class="px-8 py-5 text-slate-400 font-semibold uppercase text-xs tracking-widest">Müşteri Detayı</th>
+                                <th class="px-8 py-5 text-slate-400 font-semibold uppercase text-xs tracking-widest text-right font-mono">Bakiye</th>
+                                <th class="px-8 py-5 text-slate-400 font-semibold uppercase text-xs tracking-widest text-center">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="firebase-cari-list" class="divide-y divide-slate-800">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
 
-<!-- APP -->
-<div id="app" class="hidden">
+        </div>
+    </main>
 
-  <div id="status" class="text-yellow-400 mb-2"></div>
+    <script>
+        // 1. FIREBASE CONFIGURATION (Firebase Console'dan alacağın bilgiler)
+        const firebaseConfig = {
+            apiKey: "AIzaSy...",
+            databaseURL: "https://ems-project-default-rtdb.firebaseio.com",
+            projectId: "ems-project",
+        };
 
-  <!-- SEKTÖR -->
-  <div class="card mb-3">
-    <h2 class="neon">Sektör Paneli</h2>
-    <div id="sectorUI"></div>
-  </div>
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-  <!-- ÜRÜN EKLE -->
-  <div class="card mb-3">
-    <h2>Ürün Ekle</h2>
-    <input id="pname" placeholder="Ürün Adı" class="w-full p-2 bg-gray-800 mb-1">
-    <input id="pbarkod" placeholder="Barkod" class="w-full p-2 bg-gray-800 mb-1">
-    <input id="pprice" placeholder="Fiyat" class="w-full p-2 bg-gray-800 mb-1">
-    <button onclick="addProduct()" class="bg-blue-600 w-full p-2">Ekle</button>
-  </div>
+        // 2. LIVE DATA LISTENER (Canlı Veri Dinleme)
+        function listenToData() {
+            const cariRef = db.ref('cariler');
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
 
-  <!-- BARKOD -->
-  <div class="card mb-3">
-    <h2>Barkod / Terazi</h2>
-    <input id="barcode" placeholder="Barkod okut" class="w-full p-2 bg-gray-800 mb-2">
-    <button onclick="scanBarcode()" class="bg-purple-600 w-full p-2">Çöz</button>
-    <div id="barcodeResult" class="text-sm mt-2"></div>
-  </div>
+            cariRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                const listContainer = document.getElementById('firebase-cari-list');
+                listContainer.innerHTML = '';
+                let total = 0;
 
-  <!-- SATIŞ -->
-  <div class="card mb-3">
-    <h2>Satış</h2>
-    <select id="payType" class="w-full p-2 bg-gray-800 mb-2">
-      <option>Nakit</option>
-      <option>Kart</option>
-      <option>Veresiye</option>
-    </select>
-    <button onclick="sale()" class="bg-green-600 w-full p-2">Satışı Tamamla</button>
-  </div>
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        const item = data[key];
+                        total += parseFloat(item.borc || 0);
+                        
+                        listContainer.innerHTML += `
+                            <tr class="hover:bg-slate-800/20 transition-colors">
+                                <td class="px-8 py-6">
+                                    <div class="font-bold text-blue-100">${item.isim}</div>
+                                    <div class="text-xs text-slate-500 mt-1">${item.tel || 'No Tel'}</div>
+                                </td>
+                                <td class="px-8 py-6 text-right font-bold text-red-400 font-mono italic">₺${item.borc}</td>
+                                <td class="px-8 py-6 text-center">
+                                    <button class="bg-slate-800 hover:bg-red-900/40 text-xs px-4 py-2 rounded-lg transition-all border border-slate-700">Tahsilat Yap</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                document.getElementById('total-debt').innerText = `₺${total.toLocaleString('tr-TR')}`;
+                statusDot.classList.replace('bg-yellow-500', 'bg-green-500');
+                statusDot.classList.remove('animate-pulse');
+                statusText.innerText = "SİSTEM ÇEVRİMİÇİ";
+            });
+        }
 
-  <!-- EXCEL -->
-  <div class="card mb-3">
-    <h2>Excel Stok Yükle</h2>
-    <input type="file" id="file" class="mb-2">
-    <button onclick="uploadExcel()" class="bg-yellow-600 w-full p-2">Yükle</button>
-  </div>
+        // 3. TAB NAVIGATION
+        function switchTab(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active-nav'));
+            
+            document.getElementById('sec-' + id).classList.remove('hidden');
+            document.getElementById('nav-' + id).classList.add('active-nav');
+            document.getElementById('header-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
+        }
 
-</div>
+        // Uygulamayı başlat
+        window.onload = listenToData;
 
-<!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  addDoc,
-  collection
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-/* 🔥 FIREBASE */
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "ems-pos-b6c2c.firebaseapp.com",
-  projectId: "ems-pos-b6c2c",
-  storageBucket: "ems-pos-b6c2c.appspot.com",
-  messagingSenderId: "36315570077",
-  appId: "1:36315570077:web:8d76d47053e1f2516666ba"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let userData = null;
-
-/* REGISTER */
-window.register = async () => {
-  const email = email.value;
-  const pass = pass.value;
-  const sector = sector.value;
-
-  const user = await createUserWithEmailAndPassword(auth, email, pass);
-
-  await setDoc(doc(db, "isletmeler", user.user.uid), {
-    email,
-    sektor: sector,
-    onay: false
-  });
-
-  alert("Kayıt oldu, onay bekleniyor");
-};
-
-/* LOGIN */
-window.login = async () => {
-  const user = await signInWithEmailAndPassword(auth, email.value, pass.value);
-
-  const ref = doc(db, "isletmeler", user.user.uid);
-  const snap = await getDoc(ref);
-
-  if (!snap.exists() || !snap.data().onay) {
-    status.innerText = "ONAY BEKLENİYOR";
-    return;
-  }
-
-  userData = snap.data();
-
-  auth.style.display = "none";
-  appUI.style.display = "block";
-
-  loadSector(userData.sektor);
-};
-
-/* SEKTÖR UI */
-function loadSector(sektor) {
-  if (sektor === "market") sectorUI.innerHTML = "🛒 Market POS Aktif";
-  if (sektor === "restoran") sectorUI.innerHTML = "🍽 Masa Sistemi Aktif";
-  if (sektor === "manav") sectorUI.innerHTML = "🥬 Manav Sistemi Aktif";
-}
-
-/* ÜRÜN EKLE */
-window.addProduct = async () => {
-  await addDoc(collection(db, "urunler"), {
-    ad: pname.value,
-    barkod: pbarkod.value,
-    fiyat: pprice.value,
-    stok: 1
-  });
-
-  alert("Eklendi");
-};
-
-/* BARKOD */
-window.scanBarcode = () => {
-  let code = barcode.value;
-
-  if (code.startsWith("27") && code.length === 13) {
-    let urun = code.slice(2,7);
-    let kg = parseInt(code.slice(7,12))/1000;
-
-    barcodeResult.innerHTML =
-      "Ürün: " + urun + "<br>Ağırlık: " + kg + " kg";
-  } else {
-    barcodeResult.innerHTML = "Normal barkod";
-  }
-};
-
-/* SATIŞ */
-window.sale = async () => {
-  await addDoc(collection(db,"satislar"), {
-    toplam: 100,
-    odeme: payType.value,
-    tarih: new Date()
-  });
-
-  alert("Satış tamamlandı");
-};
-
-/* EXCEL */
-window.uploadExcel = async () => {
-  const file = document.getElementById("file").files[0];
-  const data = await file.arrayBuffer();
-  const wb = XLSX.read(data);
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  const json = XLSX.utils.sheet_to_json(sheet);
-
-  for (let i of json) {
-    await addDoc(collection(db,"urunler"), i);
-  }
-
-  alert("Excel yüklendi");
-};
-
-</script>
-
-<!-- APP ROOT -->
-<script>
-const appUI = document.getElementById("app");
-</script>
-
+    </script>
 </body>
 </html>
