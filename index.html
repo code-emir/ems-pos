@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMS POS Enterprise | Emirhan Bozdayı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0f172a; color: white; font-family: sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .btn-pay { transition: transform 0.2s; }
+        .btn-pay:active { transform: scale(0.95); }
+    </style>
+</head>
+<body class="h-screen overflow-hidden">
+
+    <div class="h-16 glass flex items-center justify-between px-6 border-b border-blue-500/30">
+        <h1 class="text-xl font-bold tracking-wider text-blue-400">EMS POS <span class="text-xs text-gray-400 text-uppercase">Enterprise</span></h1>
+        <div class="flex items-center gap-4">
+            <span class="text-sm font-medium">Yönetici: Emirhan</span>
+        </div>
+    </div>
+
+    <div class="flex h-[calc(100vh-64px)]">
+        <div class="w-1/3 p-4 border-r border-gray-700 glass">
+            <div id="reader" class="rounded-xl overflow-hidden border-2 border-blue-500/50 bg-black"></div>
+            <div class="mt-6 p-4 rounded-xl bg-blue-600/10 border border-blue-500/30 text-center">
+                <h3 class="text-gray-400 text-sm mb-1">Barkod Durumu</h3>
+                <p id="last-barcode" class="text-2xl font-mono font-bold text-white">BEKLENİYOR...</p>
+            </div>
+        </div>
+
+        <div class="flex-1 p-4 overflow-y-auto">
+            <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-shopping-cart text-blue-400"></i> Aktif Sepet
+            </h2>
+            <div id="sepetListesi" class="space-y-2">
+                <div class="text-center py-20 text-gray-500 italic">
+                    Barkod okutarak satışa başlayın...
+                </div>
+            </div>
+        </div>
+
+        <div class="w-80 p-6 glass border-l border-gray-700 flex flex-col justify-between">
+            <div>
+                <h2 class="text-gray-400 text-sm uppercase tracking-widest">Toplam</h2>
+                <div class="text-5xl font-black text-blue-400 mt-2">₺<span id="toplamTutar">0,00</span></div>
+                
+                <div class="mt-8 space-y-3">
+                    <button onclick="odemeAl('Nakit')" class="btn-pay w-full bg-green-600 p-4 rounded-xl font-bold flex items-center justify-between">
+                        <span>NAKİT</span> <i class="fas fa-money-bill-wave"></i>
+                    </button>
+                    <button onclick="odemeAl('Kart')" class="btn-pay w-full bg-blue-600 p-4 rounded-xl font-bold flex items-center justify-between">
+                        <span>KREDİ KARTI</span> <i class="fas fa-credit-card"></i>
+                    </button>
+                    <button onclick="odemeAl('Veresiye')" class="btn-pay w-full bg-amber-600 p-4 rounded-xl font-bold flex items-center justify-between">
+                        <span>VERESİYE</span> <i class="fas fa-book-open"></i>
+                    </button>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="text-gray-500 text-sm italic">Sistemi Yenile</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // ÖNEMLİ: Kendi Firebase Config bilgilerini buraya yapıştırmalısın!
+        const firebaseConfig = {
+            apiKey: "BURAYA_KENDİ_ANAHTARINI_YAZ",
+            authDomain: "PROJE-ADIN.firebaseapp.com",
+            projectId: "PROJE-ID",
+            storageBucket: "PROJE-ID.appspot.com",
+            messagingSenderId: "ID-NUMARAN",
+            appId: "APP-ID-NUMARAN"
+        };
+
+        // Kamera Başlatma
+        const html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+        html5QrCode.start({ facingMode: "environment" }, config, (barcode) => {
+            document.getElementById('last-barcode').innerText = barcode;
+            urunEkle(barcode);
+        });
+
+        let sepet = [];
+        let toplam = 0;
+
+        function urunEkle(barkod) {
+            // Şimdilik test için her barkodu 15 TL'lik ürün sayar
+            sepet.push({ad: "Test Ürünü", fiyat: 15.00, barkod: barkod});
+            guncelle();
+        }
+
+        function guncelle() {
+            const liste = document.getElementById('sepetListesi');
+            liste.innerHTML = "";
+            toplam = 0;
+            sepet.forEach(item => {
+                toplam += item.fiyat;
+                liste.innerHTML += `<div class="glass p-3 rounded-lg flex justify-between border-l-4 border-blue-500">
+                    <span>${item.ad}</span><span class="font-bold">₺${item.fiyat}</span>
+                </div>`;
+            });
+            document.getElementById('toplamTutar').innerText = toplam.toFixed(2);
+        }
+
+        window.odemeAl = (tip) => {
+            alert(tip + " ile ₺" + toplam + " ödeme alındı!");
+            sepet = [];
+            guncelle();
+        };
+    </script>
+</body>
+</html>
