@@ -10,14 +10,14 @@
     <style>
         body { background-color: #0f172a; color: white; font-family: sans-serif; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .btn-pay { transition: transform 0.2s; }
+        .btn-pay { transition: transform 0.2s; cursor: pointer; }
         .btn-pay:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="h-screen overflow-hidden">
 
     <div class="h-16 glass flex items-center justify-between px-6 border-b border-blue-500/30">
-        <h1 class="text-xl font-bold tracking-wider text-blue-400">EMS POS <span class="text-xs text-gray-400 text-uppercase">Enterprise</span></h1>
+        <h1 class="text-xl font-bold tracking-wider text-blue-400">EMS POS <span class="text-xs text-gray-400">V2.0</span></h1>
         <div class="flex items-center gap-4">
             <span class="text-sm font-medium">Yönetici: Emirhan</span>
         </div>
@@ -65,15 +65,21 @@
     </div>
 
     <script type="module">
-        // ÖNEMLİ: Kendi Firebase Config bilgilerini buraya yapıştırmalısın!
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Senin Firebase Bilgilerin
         const firebaseConfig = {
-            apiKey: "BURAYA_KENDİ_ANAHTARINI_YAZ",
-            authDomain: "PROJE-ADIN.firebaseapp.com",
-            projectId: "PROJE-ID",
-            storageBucket: "PROJE-ID.appspot.com",
-            messagingSenderId: "ID-NUMARAN",
-            appId: "APP-ID-NUMARAN"
+            apiKey: "AIzaSyAs-u3y...", // Buraya Firebase Konsolu'ndaki tam API Key'i yapıştır
+            authDomain: "ems-pos-b6c2c.firebaseapp.com",
+            projectId: "ems-pos-b6c2c",
+            storageBucket: "ems-pos-b6c2c.appspot.com",
+            messagingSenderId: "931215...",
+            appId: "1:931215...:web:..."
         };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         // Kamera Başlatma
         const html5QrCode = new Html5Qrcode("reader");
@@ -82,14 +88,16 @@
         html5QrCode.start({ facingMode: "environment" }, config, (barcode) => {
             document.getElementById('last-barcode').innerText = barcode;
             urunEkle(barcode);
+            if (navigator.vibrate) navigator.vibrate(50);
         });
 
         let sepet = [];
         let toplam = 0;
 
-        function urunEkle(barkod) {
-            // Şimdilik test için her barkodu 15 TL'lik ürün sayar
-            sepet.push({ad: "Test Ürünü", fiyat: 15.00, barkod: barkod});
+        async function urunEkle(barkod) {
+            // Firestore'dan ürün çekme mantığı buraya gelecek
+            // Şimdilik test için ürün ekler
+            sepet.push({ad: "Barkodlu Ürün", fiyat: 20.00, barkod: barkod});
             guncelle();
         }
 
@@ -100,14 +108,26 @@
             sepet.forEach(item => {
                 toplam += item.fiyat;
                 liste.innerHTML += `<div class="glass p-3 rounded-lg flex justify-between border-l-4 border-blue-500">
-                    <span>${item.ad}</span><span class="font-bold">₺${item.fiyat}</span>
+                    <span>${item.ad}</span><span class="font-bold">₺${item.fiyat.toFixed(2)}</span>
                 </div>`;
             });
             document.getElementById('toplamTutar').innerText = toplam.toFixed(2);
         }
 
-        window.odemeAl = (tip) => {
-            alert(tip + " ile ₺" + toplam + " ödeme alındı!");
+        window.odemeAl = async (tip) => {
+            if(sepet.length === 0) return;
+            alert(tip + " ile ₺" + toplam.toFixed(2) + " ödeme alındı!");
+            
+            // Satış kaydını Firebase'e atma
+            try {
+                await addDoc(collection(db, "satislar"), {
+                    tutar: toplam,
+                    yontem: tip,
+                    tarih: new Date(),
+                    urunler: sepet
+                });
+            } catch (e) { console.error("Hata: ", e); }
+
             sepet = [];
             guncelle();
         };
