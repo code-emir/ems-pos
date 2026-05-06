@@ -2,134 +2,200 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMS POS Enterprise | Emirhan Bozdayı</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EMS POS Platform v2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #0f172a; color: white; font-family: sans-serif; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .btn-pay { transition: transform 0.2s; cursor: pointer; }
-        .btn-pay:active { transform: scale(0.95); }
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .active-tab { border-bottom: 4px solid #3b82f6; color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        #reader { width: 100% !important; border: none !important; border-radius: 20px; overflow: hidden; }
+        .table-card { transition: all 0.3s ease; cursor: pointer; }
+        .table-card:hover { transform: translateY(-5px); }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="h-screen overflow-hidden">
+<body class="p-2 md:p-6">
 
-    <div class="h-16 glass flex items-center justify-between px-6 border-b border-blue-500/30">
-        <h1 class="text-xl font-bold tracking-wider text-blue-400">EMS POS <span class="text-xs text-gray-400">V2.0</span></h1>
-        <div class="flex items-center gap-4">
-            <span class="text-sm font-medium">Yönetici: Emirhan</span>
-        </div>
-    </div>
-
-    <div class="flex h-[calc(100vh-64px)]">
-        <div class="w-1/3 p-4 border-r border-gray-700 glass">
-            <div id="reader" class="rounded-xl overflow-hidden border-2 border-blue-500/50 bg-black"></div>
-            <div class="mt-6 p-4 rounded-xl bg-blue-600/10 border border-blue-500/30 text-center">
-                <h3 class="text-gray-400 text-sm mb-1">Barkod Durumu</h3>
-                <p id="last-barcode" class="text-2xl font-mono font-bold text-white">BEKLENİYOR...</p>
+    <header class="glass rounded-3xl p-5 mb-6 flex justify-between items-center shadow-2xl border border-blue-500/20">
+        <div>
+            <h1 class="text-3xl font-black text-white tracking-tighter italic">EMS<span class="text-blue-500 underline">POS</span></h1>
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
+                <p id="currentModeDisplay" class="text-[10px] text-blue-400 font-bold uppercase tracking-[0.2em]">SİSTEM AKTİF • MARKET MODU</p>
             </div>
         </div>
+        <div class="text-right">
+            <p id="clock" class="text-lg font-mono font-bold text-white">00:00:00</p>
+            <p class="text-[10px] text-gray-500">KADİRLİ / OSMANİYE</p>
+        </div>
+    </header>
 
-        <div class="flex-1 p-4 overflow-y-auto">
-            <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                <i class="fas fa-shopping-cart text-blue-400"></i> Aktif Sepet
-            </h2>
-            <div id="sepetListesi" class="space-y-2">
-                <div class="text-center py-20 text-gray-500 italic">
-                    Barkod okutarak satışa başlayın...
+    <nav class="grid grid-cols-4 gap-2 mb-6">
+        <button onclick="switchAppMode('market')" id="btn-market" class="glass rounded-2xl p-4 flex flex-col items-center gap-2 active-tab transition-all">
+            <i class="fa-solid fa-barcode text-xl"></i><span class="text-[10px] font-bold">MARKET</span>
+        </button>
+        <button onclick="switchAppMode('restoran')" id="btn-restoran" class="glass rounded-2xl p-4 flex flex-col items-center gap-2 text-gray-400 transition-all text-xs">
+            <i class="fa-solid fa-utensils text-xl"></i><span class="text-[10px] font-bold">RESTORAN</span>
+        </button>
+        <button onclick="switchAppMode('stok')" id="btn-stok" class="glass rounded-2xl p-4 flex flex-col items-center gap-2 text-gray-400 transition-all">
+            <i class="fa-solid fa-layer-group text-xl"></i><span class="text-[10px] font-bold">STOK</span>
+        </button>
+        <button onclick="switchAppMode('veresiye')" id="btn-veresiye" class="glass rounded-2xl p-4 flex flex-col items-center gap-2 text-gray-400 transition-all">
+            <i class="fa-solid fa-address-book text-xl"></i><span class="text-[10px] font-bold">CARİ</span>
+        </button>
+    </nav>
+
+    <main id="appBody">
+        
+        <div id="view-market" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-7 space-y-4">
+                <div class="glass rounded-3xl p-2 overflow-hidden shadow-inner border-2 border-blue-500/30">
+                    <div id="reader"></div>
+                </div>
+                <div class="flex gap-2">
+                    <input id="manualBarcode" type="text" placeholder="Barkod okutun veya yazın..." class="flex-grow bg-slate-800 p-5 rounded-2xl border border-slate-700 text-white focus:border-blue-500 outline-none font-bold text-lg">
+                    <button onclick="handleManualEntry()" class="bg-blue-600 hover:bg-blue-500 px-8 rounded-2xl font-black transition-all shadow-lg shadow-blue-900/40">EKLE</button>
                 </div>
             </div>
-        </div>
-
-        <div class="w-80 p-6 glass border-l border-gray-700 flex flex-col justify-between">
-            <div>
-                <h2 class="text-gray-400 text-sm uppercase tracking-widest">Toplam</h2>
-                <div class="text-5xl font-black text-blue-400 mt-2">₺<span id="toplamTutar">0,00</span></div>
+            
+            <div class="lg:col-span-5 glass rounded-3xl p-6 flex flex-col h-[600px] border-t-4 border-blue-500">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-black tracking-tight">GÜNCEL SEPET</h3>
+                    <span id="itemCount" class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-bold">0 Ürün</span>
+                </div>
                 
-                <div class="mt-8 space-y-3">
-                    <button onclick="odemeAl('Nakit')" class="btn-pay w-full bg-green-600 p-4 rounded-xl font-bold flex items-center justify-between">
-                        <span>NAKİT</span> <i class="fas fa-money-bill-wave"></i>
-                    </button>
-                    <button onclick="odemeAl('Kart')" class="btn-pay w-full bg-blue-600 p-4 rounded-xl font-bold flex items-center justify-between">
-                        <span>KREDİ KARTI</span> <i class="fas fa-credit-card"></i>
-                    </button>
-                    <button onclick="odemeAl('Veresiye')" class="btn-pay w-full bg-amber-600 p-4 rounded-xl font-bold flex items-center justify-between">
-                        <span>VERESİYE</span> <i class="fas fa-book-open"></i>
-                    </button>
+                <div id="cartItems" class="flex-grow overflow-y-auto space-y-3 pr-2 custom-scroll">
+                    </div>
+
+                <div class="mt-6 pt-6 border-t border-slate-700">
+                    <div class="flex justify-between items-end mb-6">
+                        <span class="text-gray-400 font-bold uppercase text-xs">Ödenecek Tutar</span>
+                        <span id="totalAmount" class="text-4xl font-black text-green-400 tracking-tighter">₺0.00</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="processPayment('Nakit')" class="bg-emerald-600 hover:bg-emerald-500 p-4 rounded-2xl font-bold text-[10px] shadow-lg shadow-emerald-900/20">NAKİT</button>
+                        <button onclick="processPayment('Kredi Kartı')" class="bg-sky-600 hover:bg-sky-500 p-4 rounded-2xl font-bold text-[10px] shadow-lg shadow-sky-900/20">KART</button>
+                        <button onclick="processPayment('Veresiye')" class="bg-orange-600 hover:bg-orange-500 p-4 rounded-2xl font-bold text-[10px] shadow-lg shadow-orange-900/20 uppercase">Veresiye</button>
+                    </div>
                 </div>
             </div>
-            <button onclick="location.reload()" class="text-gray-500 text-sm italic">Sistemi Yenile</button>
         </div>
-    </div>
+
+        <div id="view-restoran" class="hidden">
+            <div class="flex justify-between items-center mb-8 px-4">
+                <h2 class="text-2xl font-black italic">MASA<span class="text-blue-500">DURUMU</span></h2>
+                <button onclick="addNewTable()" class="bg-blue-600 px-6 py-3 rounded-xl text-sm font-black shadow-lg">+ YENİ MASA</button>
+            </div>
+            <div id="tableGrid" class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                </div>
+        </div>
+
+        <div id="view-stok" class="hidden max-w-2xl mx-auto glass rounded-[40px] p-10 text-center border-b-8 border-blue-600">
+            <div class="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-plus text-3xl text-blue-500"></i>
+            </div>
+            <h2 class="text-3xl font-black mb-2">HIZLI ÜRÜN KAYDI</h2>
+            <p class="text-gray-400 mb-8">Barkod okutun, isim ve fiyat girerek sisteme dahil edin.</p>
+            <div class="space-y-4 text-left">
+                <label class="text-xs font-bold text-gray-500 ml-2 uppercase">Ürün İsmi</label>
+                <input type="text" id="stokAd" class="w-full bg-slate-800 p-4 rounded-2xl border border-slate-700 outline-none focus:border-blue-500 font-bold">
+                
+                <label class="text-xs font-bold text-gray-500 ml-2 uppercase">Satış Fiyatı (₺)</label>
+                <input type="number" id="stokFiyat" class="w-full bg-slate-800 p-4 rounded-2xl border border-slate-700 outline-none focus:border-green-500 font-bold text-green-400 text-xl">
+                
+                <button onclick="saveNewProduct()" class="w-full bg-blue-600 p-5 rounded-2xl font-black text-lg mt-6 shadow-xl shadow-blue-900/40 hover:scale-[1.02] transition-transform">SİSTEME GÖNDER</button>
+            </div>
+        </div>
+
+    </main>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDoc, doc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-        // Senin Firebase Bilgilerin
         const firebaseConfig = {
-            apiKey: "AIzaSyAs-u3y...", // Buraya Firebase Konsolu'ndaki tam API Key'i yapıştır
+            apiKey: "AIzaSyD-YOUR_KEY",
             authDomain: "ems-pos-b6c2c.firebaseapp.com",
             projectId: "ems-pos-b6c2c",
             storageBucket: "ems-pos-b6c2c.appspot.com",
-            messagingSenderId: "931215...",
-            appId: "1:931215...:web:..."
+            messagingSenderId: "36315570077",
+            appId: "1:36315570077:web:8d76d47053e1f2516666ba"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        window.db = db;
+        window.sepet = [];
 
-        // Kamera Başlatma
+        // SAAT FONKSİYONU
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+        }, 1000);
+
+        // SEKTÖR DEĞİŞTİRME
+        window.switchAppMode = (mode) => {
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-tab', 'text-blue-500'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.add('text-gray-400'));
+            document.getElementById(`btn-${mode}`).classList.add('active-tab', 'text-blue-500');
+            
+            ['market', 'restoran', 'stok', 'veresiye'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if(el) el.classList.add('hidden');
+            });
+            document.getElementById(`view-${mode}`).classList.remove('hidden');
+            document.getElementById('currentModeDisplay').innerText = `SİSTEM AKTİF • ${mode.toUpperCase()} MODU`;
+        };
+
+        // BARKOD OKUYUCU
         const html5QrCode = new Html5Qrcode("reader");
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-
-        html5QrCode.start({ facingMode: "environment" }, config, (barcode) => {
-            document.getElementById('last-barcode').innerText = barcode;
-            urunEkle(barcode);
-            if (navigator.vibrate) navigator.vibrate(50);
+        html5QrCode.start({ facingMode: "environment" }, { fps: 15, qrbox: 250 }, (text) => {
+            document.getElementById('manualBarcode').value = text;
+            handleManualEntry();
         });
 
-        let sepet = [];
-        let toplam = 0;
+        // ÜRÜN BULMA
+        window.handleManualEntry = async () => {
+            const barkod = document.getElementById('manualBarcode').value;
+            if(!barkod) return;
+            const snap = await getDoc(doc(db, "urunler", barkod));
+            if(snap.exists()){
+                const d = snap.data();
+                window.sepet.push({ad: d.ad, fiyat: d.fiyat, barkod});
+                updateUI();
+                document.getElementById('manualBarcode').value = "";
+            } else {
+                alert("Ürün bulunamadı! Lütfen stok modundan ekleyin.");
+            }
+        };
 
-        async function urunEkle(barkod) {
-            // Firestore'dan ürün çekme mantığı buraya gelecek
-            // Şimdilik test için ürün ekler
-            sepet.push({ad: "Barkodlu Ürün", fiyat: 20.00, barkod: barkod});
-            guncelle();
-        }
-
-        function guncelle() {
-            const liste = document.getElementById('sepetListesi');
-            liste.innerHTML = "";
-            toplam = 0;
-            sepet.forEach(item => {
-                toplam += item.fiyat;
-                liste.innerHTML += `<div class="glass p-3 rounded-lg flex justify-between border-l-4 border-blue-500">
-                    <span>${item.ad}</span><span class="font-bold">₺${item.fiyat.toFixed(2)}</span>
+        window.updateUI = () => {
+            const list = document.getElementById('cartItems');
+            list.innerHTML = "";
+            let total = 0;
+            window.sepet.forEach(i => {
+                total += i.fiyat;
+                list.innerHTML += `
+                <div class="glass p-4 rounded-2xl flex justify-between items-center border-l-4 border-blue-500">
+                    <div><p class="font-black text-sm uppercase">${i.ad}</p><p class="text-[10px] text-gray-500">${i.barkod}</p></div>
+                    <p class="font-black text-blue-400">₺${i.fiyat.toFixed(2)}</p>
                 </div>`;
             });
-            document.getElementById('toplamTutar').innerText = toplam.toFixed(2);
-        }
+            document.getElementById('totalAmount').innerText = "₺" + total.toFixed(2);
+            document.getElementById('itemCount').innerText = window.sepet.length + " Ürün";
+        };
 
-        window.odemeAl = async (tip) => {
-            if(sepet.length === 0) return;
-            alert(tip + " ile ₺" + toplam.toFixed(2) + " ödeme alındı!");
-            
-            // Satış kaydını Firebase'e atma
-            try {
-                await addDoc(collection(db, "satislar"), {
-                    tutar: toplam,
-                    yontem: tip,
-                    tarih: new Date(),
-                    urunler: sepet
-                });
-            } catch (e) { console.error("Hata: ", e); }
-
-            sepet = [];
-            guncelle();
+        window.saveNewProduct = async () => {
+            const b = document.getElementById('manualBarcode').value;
+            const a = document.getElementById('stokAd').value;
+            const f = document.getElementById('stokFiyat').value;
+            if(!b || !a || !f) return alert("Eksik bilgi!");
+            await setDoc(doc(db, "urunler", b), { ad: a, fiyat: Number(f) });
+            alert("Kayıt Başarılı!");
+            window.switchAppMode('market');
         };
     </script>
 </body>
