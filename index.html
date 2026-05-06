@@ -1,198 +1,232 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EMS TOTAL v2.0 | Emirhan Bozdayı</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* GÖRSELDEKİ "SYNCYOPATE" FONTUNU VE MODERN YAPINI TANIMLADIK */
-        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Plus+Jakarta+Sans:wght@300;800&display=swap');
-        :root { --blue: #3b82f6; --dark: #020408; --card: #0b101a; }
-        body { background: var(--dark); color: #f1f5f9; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
-        .ems-glass { background: var(--card); border: 1px solid rgba(255,255,255,0.04); border-radius: 28px; transition: 0.3s; }
-        .ems-input { background: #0f141f; border: 1px solid #1e293b; padding: 1.25rem; border-radius: 1.2rem; width: 100%; outline: none; font-weight: 600; color: white; }
-        .ems-input:focus { border-color: var(--blue); box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); }
-        .btn-main { background: var(--blue); padding: 1.25rem; border-radius: 1.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; width: 100%; transition: 0.3s; }
-        .tab-active { background: var(--blue) !important; color: white !important; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>EMS ERP - Emirhan Bozdayı</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/xlsx.full.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Syncopate&family=Plus+Jakarta+Sans&display=swap" rel="stylesheet">
+
+<style>
+body { font-family: 'Plus Jakarta Sans', sans-serif; background:#0b0f19; color:#fff; }
+.title { font-family:'Syncopate'; }
+.card { background:#111827; border:1px solid #1f2937; border-radius:12px; padding:12px; }
+.neon { color:#00e5ff; }
+button { transition:.2s; }
+button:hover { transform:scale(1.02); }
+</style>
+
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4">
 
-    <div id="authScreen" class="fixed inset-0 z-[999] bg-[#020408] flex items-center justify-center p-6 transition-opacity duration-500">
-        <div class="ems-glass p-10 max-w-md w-full border-t-8 border-blue-600 shadow-2xl text-center">
-            
-            <div class="mb-10">
-                <h1 style="font-family: 'Syncopate', sans-serif;" class="text-3xl font-bold tracking-tighter text-white mb-2 italic">EMS<span class="text-blue-500">POS</span></h1>
-                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.4em] mt-1">v2.0 İşletme Otomasyonu</p>
-            </div>
+<h1 class="title text-xl neon">EMS ERP SYSTEM</h1>
+<p class="text-xs opacity-60">Software by Emirhan Bozdayı - Tüm Hakları Saklıdır</p>
 
-            <div id="loginForm" class="space-y-4">
-                <div class="relative">
-                    <i class="fa-solid fa-envelope absolute left-5 top-5 text-slate-600 text-xs"></i>
-                    <input type="email" id="email" placeholder="İşletme E-postası" class="ems-input pl-12">
-                </div>
-                
-                <div class="relative">
-                    <i class="fa-solid fa-lock absolute left-5 top-5 text-slate-600 text-xs"></i>
-                    <input type="password" id="password" placeholder="Şifre" class="ems-input pl-12">
-                </div>
-                
-                <div id="sectorField" class="hidden text-left space-y-1">
-                    <label class="text-[10px] font-black text-slate-600 ml-1 uppercase">Sektör Seçimi</label>
-                    <select id="sectorSelect" class="ems-input text-blue-400 font-bold">
-                        <option value="Market">Market Modu</option>
-                        <option value="Restoran">Restoran Modu</option>
-                        <option value="Manav">Manav Modu</option>
-                    </select>
-                </div>
+<!-- LOGIN -->
+<div id="auth" class="card mt-4">
+  <input id="email" placeholder="Email" class="w-full p-2 bg-gray-800 mb-2">
+  <input id="pass" type="password" placeholder="Şifre" class="w-full p-2 bg-gray-800 mb-2">
 
-                <button onclick="handleAuth()" class="btn-main mt-6">Sistemi Başlat / Kaydol</button>
-                <p id="toggleText" onclick="toggleMode()" class="text-center text-[10px] text-blue-500 font-bold mt-4 cursor-pointer hover:underline uppercase tracking-wider">Yeni İşletme Kaydı Yap</p>
-            </div>
+  <select id="sector" class="w-full p-2 bg-gray-800 mb-2">
+    <option value="market">Market</option>
+    <option value="restoran">Restoran</option>
+    <option value="manav">Manav</option>
+  </select>
 
-            <p class="mt-10 text-[9px] text-slate-700 text-center font-bold uppercase tracking-widest leading-loose">Software by Emirhan Bozdayı<br>Tüm Hakları Saklıdır © 2026</p>
-        </div>
-    </div>
+  <button onclick="register()" class="bg-blue-600 w-full p-2 mb-2">Kayıt Ol</button>
+  <button onclick="login()" class="bg-green-600 w-full p-2">Giriş</button>
+</div>
 
-    <div id="mainUI" class="hidden opacity-0 transition-opacity duration-700">
-        <header class="flex justify-between items-center mb-6 px-2">
-            <div>
-                <h2 style="font-family: 'Syncopate';" class="text-lg font-bold italic tracking-tighter">EMS<span class="text-blue-500" id="headerSector">TOTAL</span></h2>
-                <p id="infoDisplay" class="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1"></p>
-            </div>
-            <div class="text-right">
-                <p id="clock" class="text-xl font-black text-white">00:00</p>
-                <button onclick="logout()" class="text-[10px] text-red-500 font-bold uppercase underline">Oturumu Kapat</button>
-            </div>
-        </header>
+<!-- APP -->
+<div id="app" class="hidden">
 
-        <nav class="grid grid-cols-4 gap-2 mb-8">
-            <button onclick="tab('kasa')" id="n-kasa" class="ems-glass p-4 flex flex-col items-center gap-2 tab-active"><i class="fa-solid fa-cash-register"></i><span class="text-[8px] font-bold uppercase">Kasa</span></button>
-            <button onclick="tab('masa')" id="n-masa" class="ems-glass p-4 flex flex-col items-center gap-2 text-slate-600"><i class="fa-solid fa-table-cells"></i><span class="text-[8px] font-bold uppercase">Masa</span></button>
-            <button onclick="tab('stok')" id="n-stok" class="ems-glass p-4 flex flex-col items-center gap-2 text-slate-600"><i class="fa-solid fa-box"></i><span class="text-[8px] font-bold uppercase">Stok</span></button>
-            <button onclick="tab('cari')" id="n-cari" class="ems-glass p-4 flex flex-col items-center gap-2 text-slate-600"><i class="fa-solid fa-users"></i><span class="text-[8px] font-bold uppercase">Cari</span></button>
-        </nav>
-        
-        <main id="v-kasa" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="lg:col-span-7">
-                <div class="ems-glass p-2 overflow-hidden border border-blue-500/10 mb-4 shadow-2xl"><div id="qr-reader"></div></div>
-                <div class="flex gap-2">
-                    <input id="barcodeIn" type="text" placeholder="Barkod Okutun..." class="ems-input text-xl flex-grow">
-                    <button onclick="manualAdd()" class="bg-blue-600 px-10 rounded-2xl font-black text-xs">EKLE</button>
-                </div>
-            </div>
-            <div class="lg:col-span-5 ems-glass p-8 flex flex-col h-[550px] border-t-8 border-blue-600">
-                <div id="cart" class="flex-grow overflow-y-auto space-y-3"></div>
-                <div class="pt-6 border-t border-slate-800 mt-4">
-                    <div class="flex justify-between items-center mb-6 font-black"><span class="text-slate-500 text-[10px] uppercase">Toplam</span><span id="totalVal" class="text-4xl text-green-400">₺0.00</span></div>
-                    <button onclick="pay()" class="btn-main bg-emerald-600">Satışı Tamamla</button>
-                </div>
-            </div>
-        </main>
-    </div>
+  <div id="status" class="text-yellow-400 mb-2"></div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+  <!-- SEKTÖR -->
+  <div class="card mb-3">
+    <h2 class="neon">Sektör Paneli</h2>
+    <div id="sectorUI"></div>
+  </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD-YOUR-KEY",
-            authDomain: "ems-pos-b6c2c.firebaseapp.com",
-            projectId: "ems-pos-b6c2c",
-            storageBucket: "ems-pos-b6c2c.appspot.com",
-            messagingSenderId: "36315570077",
-            appId: "1:36315570077:web:8d76d47053e1f2516666ba"
-        };
+  <!-- ÜRÜN EKLE -->
+  <div class="card mb-3">
+    <h2>Ürün Ekle</h2>
+    <input id="pname" placeholder="Ürün Adı" class="w-full p-2 bg-gray-800 mb-1">
+    <input id="pbarkod" placeholder="Barkod" class="w-full p-2 bg-gray-800 mb-1">
+    <input id="pprice" placeholder="Fiyat" class="w-full p-2 bg-gray-800 mb-1">
+    <button onclick="addProduct()" class="bg-blue-600 w-full p-2">Ekle</button>
+  </div>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+  <!-- BARKOD -->
+  <div class="card mb-3">
+    <h2>Barkod / Terazi</h2>
+    <input id="barcode" placeholder="Barkod okut" class="w-full p-2 bg-gray-800 mb-2">
+    <button onclick="scanBarcode()" class="bg-purple-600 w-full p-2">Çöz</button>
+    <div id="barcodeResult" class="text-sm mt-2"></div>
+  </div>
 
-        let isLoginMode = true;
+  <!-- SATIŞ -->
+  <div class="card mb-3">
+    <h2>Satış</h2>
+    <select id="payType" class="w-full p-2 bg-gray-800 mb-2">
+      <option>Nakit</option>
+      <option>Kart</option>
+      <option>Veresiye</option>
+    </select>
+    <button onclick="sale()" class="bg-green-600 w-full p-2">Satışı Tamamla</button>
+  </div>
 
-        window.toggleMode = () => {
-            isLoginMode = !isLoginMode;
-            document.getElementById('sectorField').classList.toggle('hidden');
-            document.getElementById('toggleText').innerText = isLoginMode ? 'Yeni İşletme Kaydı Yap' : 'Zaten hesabım var, Giriş Yap';
-        };
+  <!-- EXCEL -->
+  <div class="card mb-3">
+    <h2>Excel Stok Yükle</h2>
+    <input type="file" id="file" class="mb-2">
+    <button onclick="uploadExcel()" class="bg-yellow-600 w-full p-2">Yükle</button>
+  </div>
 
-        // --- EMİRHAN BOZDAYI LİSANS VE ONAY MANTIĞI ---
-        window.handleAuth = async () => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            const sector = document.getElementById('sectorSelect').value;
+</div>
 
-            try {
-                if(isLoginMode) {
-                    await signInWithEmailAndPassword(auth, email, pass);
-                } else {
-                    const res = await createUserWithEmailAndPassword(auth, email, pass);
-                    await setDoc(doc(db, "isletmeler", res.user.uid), {
-                        email, sector, onay: false, tarih: new Date()
-                    });
-                    alert("Kayıt Alındı! Emirhan Bozdayı tarafından onaylanmanız gerekmektedir.");
-                    await signOut(auth);
-                }
-            } catch (err) {
-                // Görseldeki "invalid-login" hatasının asıl çözümü
-                if(err.code === 'auth/invalid-credential') alert("Giriş Hatası: Firebase: Error (auth/invalid-login-credentials).");
-                else alert("Hata: " + err.message);
-            }
-        };
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await getDoc(doc(db, "isletmeler", user.uid));
-                if(snap.exists() && snap.data().onay === true) {
-                    document.getElementById('authScreen').classList.add('hidden');
-                    document.getElementById('mainUI').classList.remove('hidden');
-                    setTimeout(() => document.getElementById('mainUI').style.opacity = "1", 50);
-                    document.getElementById('infoDisplay').innerText = `İŞLETME: ${user.email} | DURUM: AKTİF`;
-                    document.getElementById('headerSector').innerText = snap.data().sector.toUpperCase();
-                    startScanner();
-                } else {
-                    alert("Lisans Geçersiz: Emirhan Bozdayı onayı bekleniyor.");
-                    await signOut(auth);
-                }
-            } else {
-                document.getElementById('authScreen').classList.remove('hidden');
-                document.getElementById('mainUI').classList.add('hidden');
-            }
-        });
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  addDoc,
+  collection
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        window.logout = () => signOut(auth);
+/* 🔥 FIREBASE */
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "ems-pos-b6c2c.firebaseapp.com",
+  projectId: "ems-pos-b6c2c",
+  storageBucket: "ems-pos-b6c2c.appspot.com",
+  messagingSenderId: "36315570077",
+  appId: "1:36315570077:web:8d76d47053e1f2516666ba"
+};
 
-        // BARKOD SİSTEMİ
-        let scanner = new Html5Qrcode("qr-reader");
-        function startScanner() {
-            scanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (text) => {
-                document.getElementById('barcodeIn').value = text;
-                manualAdd();
-            });
-        }
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-        window.manualAdd = async () => {
-            const b = document.getElementById('barcodeIn').value;
-            const snap = await getDoc(doc(db, "urunler", b));
-            if(snap.exists()) {
-                const i = snap.data();
-                const div = document.createElement('div');
-                div.className = 'ems-glass p-4 flex justify-between border-l-4 border-blue-500';
-                div.innerHTML = `<span class="text-[10px] font-black uppercase">${i.ad}</span><span class="text-blue-400 font-black">₺${i.fiyat}</span>`;
-                document.getElementById('cart').appendChild(div);
-                updateTotal(i.fiyat);
-            }
-            document.getElementById('barcodeIn').value = "";
-        };
+let userData = null;
 
-        let currentTotal = 0;
-        function updateTotal(p) { currentTotal += parseFloat(p); document.getElementById('totalVal').innerText = "₺" + currentTotal.toFixed(2); }
+/* REGISTER */
+window.register = async () => {
+  const email = email.value;
+  const pass = pass.value;
+  const sector = sector.value;
 
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}); }, 1000);
-    </script>
+  const user = await createUserWithEmailAndPassword(auth, email, pass);
+
+  await setDoc(doc(db, "isletmeler", user.user.uid), {
+    email,
+    sektor: sector,
+    onay: false
+  });
+
+  alert("Kayıt oldu, onay bekleniyor");
+};
+
+/* LOGIN */
+window.login = async () => {
+  const user = await signInWithEmailAndPassword(auth, email.value, pass.value);
+
+  const ref = doc(db, "isletmeler", user.user.uid);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists() || !snap.data().onay) {
+    status.innerText = "ONAY BEKLENİYOR";
+    return;
+  }
+
+  userData = snap.data();
+
+  auth.style.display = "none";
+  appUI.style.display = "block";
+
+  loadSector(userData.sektor);
+};
+
+/* SEKTÖR UI */
+function loadSector(sektor) {
+  if (sektor === "market") sectorUI.innerHTML = "🛒 Market POS Aktif";
+  if (sektor === "restoran") sectorUI.innerHTML = "🍽 Masa Sistemi Aktif";
+  if (sektor === "manav") sectorUI.innerHTML = "🥬 Manav Sistemi Aktif";
+}
+
+/* ÜRÜN EKLE */
+window.addProduct = async () => {
+  await addDoc(collection(db, "urunler"), {
+    ad: pname.value,
+    barkod: pbarkod.value,
+    fiyat: pprice.value,
+    stok: 1
+  });
+
+  alert("Eklendi");
+};
+
+/* BARKOD */
+window.scanBarcode = () => {
+  let code = barcode.value;
+
+  if (code.startsWith("27") && code.length === 13) {
+    let urun = code.slice(2,7);
+    let kg = parseInt(code.slice(7,12))/1000;
+
+    barcodeResult.innerHTML =
+      "Ürün: " + urun + "<br>Ağırlık: " + kg + " kg";
+  } else {
+    barcodeResult.innerHTML = "Normal barkod";
+  }
+};
+
+/* SATIŞ */
+window.sale = async () => {
+  await addDoc(collection(db,"satislar"), {
+    toplam: 100,
+    odeme: payType.value,
+    tarih: new Date()
+  });
+
+  alert("Satış tamamlandı");
+};
+
+/* EXCEL */
+window.uploadExcel = async () => {
+  const file = document.getElementById("file").files[0];
+  const data = await file.arrayBuffer();
+  const wb = XLSX.read(data);
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  const json = XLSX.utils.sheet_to_json(sheet);
+
+  for (let i of json) {
+    await addDoc(collection(db,"urunler"), i);
+  }
+
+  alert("Excel yüklendi");
+};
+
+</script>
+
+<!-- APP ROOT -->
+<script>
+const appUI = document.getElementById("app");
+</script>
+
 </body>
 </html>
