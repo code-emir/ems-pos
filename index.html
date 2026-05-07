@@ -2,163 +2,283 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMS Global SaaS | Cloud Automation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EMS POS Premium | Enterprise Cloud</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #e2e8f0; }
-        .glass-card { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .sidebar-btn:hover { background: #1e293b; color: #60a5fa; }
-        .active-nav { background: #1e293b; color: #3b82f6; border-right: 4px solid #3b82f6; }
+        :root { --accent: #3b82f6; --bg: #090b10; --panel: #131722; --text: #f1f5f9; --success: #10b981; --danger: #ef4444; --border: #242b3d; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
+        .glass { background: rgba(19, 23, 34, 0.8); backdrop-filter: blur(12px); border: 1px solid var(--border); }
+        .active-tab { border-bottom: 3px solid var(--accent); color: var(--accent); }
+        input, select { background: #0a0e17 !important; border: 1px solid var(--border) !important; color: white !important; padding: 12px; border-radius: 12px; transition: 0.3s; }
+        input:focus { border-color: var(--accent) !important; box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+        .btn-action { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-action:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden">
+<body class="flex flex-col">
 
-    <aside class="w-64 bg-[#020617] border-r border-slate-800 flex flex-col justify-between">
+<div id="auth-screen" class="fixed inset-0 z-[9999] bg-[#090b10] flex items-center justify-center p-6">
+    <div class="glass p-10 rounded-[2.5rem] w-full max-w-[420px] text-center border-blue-500/20">
+        <h1 class="text-4xl font-black italic tracking-tighter text-blue-500 mb-2">EMS POS</h1>
+        <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-8">Professional Cloud Automation</p>
+        
+        <div id="login-form" class="space-y-4">
+            <input type="email" id="email" placeholder="E-posta" class="w-full">
+            <input type="password" id="pass" placeholder="Şifre" class="w-full">
+            <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 p-4 rounded-xl font-bold transition shadow-lg shadow-blue-900/20">SİSTEME GİRİŞ YAP</button>
+            <p onclick="toggleForm(true)" class="text-xs text-slate-400 cursor-pointer hover:text-blue-400">Yeni İşletme Kaydı</p>
+        </div>
+
+        <div id="reg-form" class="hidden space-y-4 text-left">
+            <input type="text" id="r-name" placeholder="İşletme Adı" class="w-full">
+            <select id="r-type" class="w-full">
+                <option value="market">Market / Perakende (+Terazi)</option>
+                <option value="manav">Manav (Ağırlık Odaklı)</option>
+                <option value="restoran">Restoran / Kafe (Masa/Menü)</option>
+            </select>
+            <input type="email" id="r-email" placeholder="E-posta" class="w-full">
+            <input type="password" id="r-pass" placeholder="Şifre" class="w-full">
+            <button onclick="register()" class="w-full bg-emerald-600 hover:bg-emerald-700 p-4 rounded-xl font-bold transition">KAYIT OL VE ONAY BEKLE</button>
+            <p onclick="toggleForm(false)" class="text-xs text-center text-slate-400 cursor-pointer">Giriş Ekranına Dön</p>
+        </div>
+    </div>
+</div>
+
+<nav class="h-20 glass flex items-center justify-between px-8 z-50">
+    <div class="flex items-center gap-6">
+        <div class="bg-blue-600 p-2 rounded-xl text-white font-black italic shadow-lg shadow-blue-600/30">EMS</div>
         <div>
-            <div class="p-8">
-                <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent italic">EMS SaaS MASTER</h1>
-            </div>
-            <nav class="space-y-1 px-4">
-                <button onclick="switchTab('dashboard')" class="sidebar-btn active-nav w-full flex items-center p-4 rounded-xl transition-all" id="nav-dashboard">
-                    <span class="mr-3">📊</span> Dashboard
-                </button>
-                <button onclick="switchTab('cari')" class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all" id="nav-cari">
-                    <span class="mr-3">👥</span> Cari Takip
-                </button>
-                <button onclick="switchTab('stok')" class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all" id="nav-stok">
-                    <span class="mr-3">📦</span> Stok Yönetimi
-                </button>
-            </nav>
+            <h2 id="display-biz-name" class="font-bold text-lg leading-tight uppercase tracking-wide">Yükleniyor...</h2>
+            <div id="biz-type-badge" class="text-[10px] text-blue-400 font-bold tracking-widest opacity-70">SaaS MODE</div>
         </div>
-        <div class="p-6 border-t border-slate-800">
-            <div class="flex items-center space-x-3">
-                <div id="status-dot" class="w-2.5 h-2.5 bg-yellow-500 rounded-full animate-pulse"></div>
-                <span id="status-text" class="text-xs text-slate-400 font-medium tracking-wider">BULUT BAĞLANTISI...</span>
-            </div>
+    </div>
+    
+    <div class="flex items-center gap-6">
+        <div class="hidden md:flex flex-col text-right border-r border-slate-800 pr-6">
+            <span class="text-[10px] text-slate-500 font-bold uppercase">Sorumlu Yönetici</span>
+            <span class="text-sm font-semibold text-blue-400">Emirhan Bozdayı</span>
         </div>
+        <button onclick="logout()" class="text-red-500 hover:bg-red-500/10 p-2 px-4 rounded-xl text-xs font-bold border border-red-500/20 transition">Çıkış</button>
+    </div>
+</nav>
+
+<div class="flex flex-1 overflow-hidden">
+    <aside class="w-24 md:w-64 bg-[#0a0e17] border-r border-slate-800 p-4 flex flex-col gap-3">
+        <button onclick="switchTab('dash')" id="btn-dash" class="sidebar-btn p-4 rounded-2xl text-left font-bold text-sm hover:bg-slate-800/50 transition active-tab">📊 Panel</button>
+        <button onclick="switchTab('pos')" id="btn-pos" class="sidebar-btn p-4 rounded-2xl text-left font-bold text-sm hover:bg-slate-800/50 transition">⚡ Hızlı Satış</button>
+        <button onclick="switchTab('cari')" id="btn-cari" class="sidebar-btn p-4 rounded-2xl text-left font-bold text-sm hover:bg-slate-800/50 transition">👥 Cari / Veresiye</button>
+        <button onclick="switchTab('stok')" id="btn-stok" class="sidebar-btn p-4 rounded-2xl text-left font-bold text-sm hover:bg-slate-800/50 transition">📦 Stok / Envanter</button>
     </aside>
 
-    <main class="flex-1 flex flex-col">
-        <header class="h-16 flex items-center justify-between px-10 border-b border-slate-800 bg-[#020617]/80 backdrop-blur-md sticky top-0 z-10">
-            <h2 id="header-title" class="text-lg font-semibold tracking-wide">Genel Durum</h2>
-            <div class="flex items-center space-x-6">
-                <button onclick="toggleAddModal()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-lg shadow-blue-900/20">
-                    + Yeni Kayıt
-                </button>
-                <div class="h-8 w-px bg-slate-800"></div>
-                <span class="text-sm font-medium text-slate-400 italic">User: emirhan_bozdayi</span>
+    <main class="flex-1 relative overflow-hidden bg-[#090b10] p-8">
+        
+        <section id="sec-dash" class="screen space-y-8 animate-in fade-in duration-500">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass p-8 rounded-[2.5rem] relative overflow-hidden group">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">Kasadaki Toplam Alacak</p>
+                    <h3 id="dash-total-cari" class="text-4xl font-black text-red-500 mt-4 tracking-tighter">₺0,00</h3>
+                    <div class="absolute -right-4 -bottom-4 text-7xl opacity-5 grayscale group-hover:grayscale-0 transition-all duration-500">👤</div>
+                </div>
+                <div class="glass p-8 rounded-[2.5rem] relative overflow-hidden group border-emerald-500/10">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">Stoktaki Toplam Ürün</p>
+                    <h3 id="dash-total-stok" class="text-4xl font-black text-emerald-500 mt-4 tracking-tighter">0</h3>
+                    <div class="absolute -right-4 -bottom-4 text-7xl opacity-5 grayscale group-hover:grayscale-0 transition-all duration-500">📦</div>
+                </div>
+                <div class="glass p-8 rounded-[2.5rem] relative overflow-hidden group border-blue-500/10">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">Bugünkü Tahmini Ciro</p>
+                    <h3 class="text-4xl font-black text-blue-500 mt-4 tracking-tighter">₺0,00</h3>
+                    <div class="absolute -right-4 -bottom-4 text-7xl opacity-5 grayscale group-hover:grayscale-0 transition-all duration-500">📈</div>
+                </div>
             </div>
-        </header>
+        </section>
 
-        <div id="content-scroll" class="flex-1 overflow-y-auto p-10 space-y-8">
-            
-            <section id="sec-dashboard" class="space-y-8 animate-in fade-in duration-500">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
-                        <p class="text-slate-400 text-sm font-medium">Toplam Alacak</p>
-                        <h3 id="total-debt" class="text-4xl font-bold text-red-500 mt-2">₺0,00</h3>
-                        <div class="absolute -right-4 -bottom-4 text-6xl opacity-5 grayscale group-hover:grayscale-0 transition-all">💸</div>
+        <section id="sec-pos" class="hidden screen h-full flex flex-col gap-6">
+            <div class="flex flex-col lg:flex-row gap-8 h-full">
+                <div class="flex-1 flex flex-col gap-4">
+                    <div class="glass rounded-[2rem] p-4 flex items-center gap-4 border-blue-500/20">
+                        <div id="interactive" class="w-24 h-24 rounded-xl overflow-hidden bg-black border-2 border-blue-500 relative">
+                             <div class="laser w-full h-[1px] bg-red-500 absolute top-1/2 shadow-[0_0_5px_red] animate-pulse"></div>
+                        </div>
+                        <div class="flex-1">
+                            <input type="text" id="pos-input" placeholder="Barkod Okut veya Ürün Ara..." class="w-full text-lg">
+                            <div class="flex gap-2 mt-2">
+                                <button onclick="setWeightMode(true)" id="weight-btn" class="text-[10px] font-bold border border-slate-700 px-3 py-1 rounded-full text-slate-500">TERAZİ: KAPALI</button>
+                                <span class="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-tighter italic">Farklı Mod: Ctrl + Space</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
-                        <p class="text-slate-400 text-sm font-medium">Stoktaki Ürün</p>
-                        <h3 id="total-stock" class="text-4xl font-bold text-emerald-500 mt-2">0 Adet</h3>
-                        <div class="absolute -right-4 -bottom-4 text-6xl opacity-5 grayscale group-hover:grayscale-0 transition-all">📦</div>
-                    </div>
-                    <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
-                        <p class="text-slate-400 text-sm font-medium">Günlük Tahsilat</p>
-                        <h3 class="text-4xl font-bold text-blue-500 mt-2">₺0,00</h3>
-                        <div class="absolute -right-4 -bottom-4 text-6xl opacity-5 grayscale group-hover:grayscale-0 transition-all">📈</div>
+                    <div class="flex-1 glass rounded-[2rem] overflow-hidden flex flex-col p-6">
+                        <div class="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">
+                            <span>Ürün Adı</span>
+                            <div class="flex gap-16">
+                                <span>Adet/KG</span>
+                                <span>Tutar</span>
+                            </div>
+                        </div>
+                        <div id="cart-list" class="flex-1 overflow-y-auto space-y-4">
+                            </div>
                     </div>
                 </div>
-            </section>
-
-            <section id="sec-cari" class="hidden space-y-4 animate-in slide-in-from-bottom-4 duration-500">
-                <div class="glass-card rounded-3xl overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-800/30">
-                            <tr>
-                                <th class="px-8 py-5 text-slate-400 font-semibold uppercase text-xs tracking-widest">Müşteri Detayı</th>
-                                <th class="px-8 py-5 text-slate-400 font-semibold uppercase text-xs tracking-widest text-right font-mono">Bakiye</th>
-                                <th class="px-8 py-5 text-slate-400 font-semibold uppercase text-xs tracking-widest text-center">İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody id="firebase-cari-list" class="divide-y divide-slate-800">
-                            </tbody>
-                    </table>
+                <div class="w-full lg:w-96 glass rounded-[2.5rem] p-8 flex flex-col justify-between border-slate-800">
+                    <div class="space-y-6">
+                        <h4 class="text-center text-slate-500 text-xs font-bold uppercase tracking-widest border-b border-slate-800 pb-4">Ödeme Özeti</h4>
+                        <div class="flex justify-between items-end">
+                            <span class="text-slate-400 font-bold">Toplam Tutar:</span>
+                            <span id="pos-total" class="text-5xl font-black text-emerald-500 tracking-tighter">₺0,00</span>
+                        </div>
+                        <div class="space-y-3 pt-6">
+                            <button class="w-full btn-action bg-emerald-600 hover:bg-emerald-700 p-5 rounded-2xl font-black text-lg">NAKİT SATIŞ</button>
+                            <button class="w-full btn-action bg-blue-600 hover:bg-blue-700 p-5 rounded-2xl font-black text-lg">KREDİ KARTI</button>
+                            <button class="w-full btn-action bg-red-600/10 text-red-500 border border-red-500/20 p-5 rounded-2xl font-black">VERESİYE OLARAK İŞLE</button>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-center text-slate-600 font-bold uppercase italic">EMS Enterprise Security v2.0</p>
                 </div>
-            </section>
+            </div>
+        </section>
 
-        </div>
+        <section id="sec-cari" class="hidden screen">
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="text-3xl font-black tracking-tighter">Müşteri Rehberi</h3>
+                <button onclick="addCari()" class="bg-blue-600 p-4 px-8 rounded-2xl font-bold shadow-lg shadow-blue-900/40 transition hover:scale-105">+ Yeni Müşteri Ekle</button>
+            </div>
+            <div class="glass rounded-[2rem] overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-900/50">
+                        <tr>
+                            <th class="p-6 text-[10px] font-black text-slate-500 uppercase">Müşteri/İşletme</th>
+                            <th class="p-6 text-[10px] font-black text-slate-500 uppercase text-right">Mevcut Bakiye</th>
+                            <th class="p-6 text-[10px] font-black text-slate-500 uppercase text-center">Hızlı İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cari-table-body" class="divide-y divide-slate-800/50">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
     </main>
+</div>
 
-    <script>
-        // 1. FIREBASE CONFIGURATION (Firebase Console'dan alacağın bilgiler)
-        const firebaseConfig = {
-            apiKey: "AIzaSy...",
-            databaseURL: "https://ems-project-default-rtdb.firebaseio.com",
-            projectId: "ems-project",
-        };
+<script>
+    // FIREBASE MASTER CONFIG (Bozulmadı)
+    const firebaseConfig = {
+        apiKey: "AIzaSyCkwCPXxUayvLclNMgC-6yk-m5STG_7NLI",
+        authDomain: "ems-pos-5b50b.firebaseapp.com",
+        projectId: "ems-pos-5b50b",
+        storageBucket: "ems-pos-5b50b.firebasestorage.app",
+        messagingSenderId: "444531568303",
+        appId: "1:444531568303:web:dba6979ace54e0aeae2e5a"
+    };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    let currentBizId = null;
+    let isWeightMode = false;
 
-        // 2. LIVE DATA LISTENER (Canlı Veri Dinleme)
-        function listenToData() {
-            const cariRef = db.ref('cariler');
-            const statusDot = document.getElementById('status-dot');
-            const statusText = document.getElementById('status-text');
+    // --- AUTH & LOGIN LOJİĞİ ---
+    function toggleForm(isReg) {
+        document.getElementById('login-form').style.display = isReg ? 'none' : 'block';
+        document.getElementById('reg-form').style.display = isReg ? 'block' : 'none';
+    }
 
-            cariRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                const listContainer = document.getElementById('firebase-cari-list');
-                listContainer.innerHTML = '';
-                let total = 0;
-
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        const item = data[key];
-                        total += parseFloat(item.borc || 0);
-                        
-                        listContainer.innerHTML += `
-                            <tr class="hover:bg-slate-800/20 transition-colors">
-                                <td class="px-8 py-6">
-                                    <div class="font-bold text-blue-100">${item.isim}</div>
-                                    <div class="text-xs text-slate-500 mt-1">${item.tel || 'No Tel'}</div>
-                                </td>
-                                <td class="px-8 py-6 text-right font-bold text-red-400 font-mono italic">₺${item.borc}</td>
-                                <td class="px-8 py-6 text-center">
-                                    <button class="bg-slate-800 hover:bg-red-900/40 text-xs px-4 py-2 rounded-lg transition-all border border-slate-700">Tahsilat Yap</button>
-                                </td>
-                            </tr>
-                        `;
-                    });
+    function login() {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('pass').value;
+        auth.signInWithEmailAndPassword(email, pass).then(res => {
+            db.collection("isletmeler").doc(res.user.uid).get().then(doc => {
+                if(doc.exists && doc.data().onayli === true) {
+                    currentBizId = res.user.uid;
+                    initApp(doc.data());
+                } else {
+                    alert("Onay bekleniyor veya hatalı giriş!");
+                    auth.signOut();
                 }
-                
-                document.getElementById('total-debt').innerText = `₺${total.toLocaleString('tr-TR')}`;
-                statusDot.classList.replace('bg-yellow-500', 'bg-green-500');
-                statusDot.classList.remove('animate-pulse');
-                statusText.innerText = "SİSTEM ÇEVRİMİÇİ";
             });
-        }
+        }).catch(err => alert("Giriş Hatası: " + err.message));
+    }
 
-        // 3. TAB NAVIGATION
-        function switchTab(id) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active-nav'));
-            
-            document.getElementById('sec-' + id).classList.remove('hidden');
-            document.getElementById('nav-' + id).classList.add('active-nav');
-            document.getElementById('header-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
-        }
+    function initApp(biz) {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('display-biz-name').innerText = biz.name;
+        document.getElementById('biz-type-badge').innerText = biz.type.toUpperCase() + " ENTERPRISE";
+        loadCariSystem();
+        startScanner();
+    }
 
-        // Uygulamayı başlat
-        window.onload = listenToData;
+    // --- SAAS ÖZELLİKLERİ & TAB KONTROL ---
+    function switchTab(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active-tab', 'bg-slate-800/50'));
+        
+        document.getElementById('sec-' + id).classList.remove('hidden');
+        document.getElementById('btn-' + id).classList.add('active-tab', 'bg-slate-800/50');
+    }
 
-    </script>
+    // --- TERAZİ MODU LOJİĞİ (Market & Manav için) ---
+    function setWeightMode(status) {
+        isWeightMode = status;
+        const btn = document.getElementById('weight-btn');
+        btn.innerText = isWeightMode ? "TERAZİ: AKTİF (KG)" : "TERAZİ: KAPALI (ADET)";
+        btn.className = isWeightMode ? "text-[10px] font-bold border border-emerald-500 px-3 py-1 rounded-full text-emerald-500 bg-emerald-500/10" : "text-[10px] font-bold border border-slate-700 px-3 py-1 rounded-full text-slate-500";
+    }
+
+    // --- CANLI CARİ TAKİP ---
+    function loadCariSystem() {
+        db.collection("isletmeler").doc(currentBizId).collection("cariler")
+        .onSnapshot(snap => {
+            const tbody = document.getElementById('cari-table-body');
+            tbody.innerHTML = '';
+            let totalBorc = 0;
+            snap.forEach(doc => {
+                const c = doc.data();
+                totalBorc += parseFloat(c.borc || 0);
+                tbody.innerHTML += `
+                    <tr class="hover:bg-blue-500/5 transition-all group">
+                        <td class="p-6 font-bold text-slate-200">${c.isim}</td>
+                        <td class="p-6 text-right font-mono font-bold text-red-500 italic">₺${parseFloat(c.borc).toLocaleString('tr-TR')}</td>
+                        <td class="p-6 text-center">
+                            <button onclick="makeTahsilat('${doc.id}', ${c.borc})" class="bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white px-5 py-2 rounded-xl text-[10px] font-black transition-all">TAHSİLAT YAP</button>
+                        </td>
+                    </tr>`;
+            });
+            document.getElementById('dash-total-cari').innerText = "₺" + totalBorc.toLocaleString('tr-TR');
+        });
+    }
+
+    function addCari() {
+        const name = prompt("Yeni Müşteri/İşletme Adı:");
+        if(name) db.collection("isletmeler").doc(currentBizId).collection("cariler").add({ isim: name, borc: 0, tarih: new Date().toISOString() });
+    }
+
+    function makeTahsilat(id, old) {
+        const tutar = prompt("Alınan Ödeme Tutarı:");
+        if(tutar) db.collection("isletmeler").doc(currentBizId).collection("cariler").doc(id).update({ borc: old - parseFloat(tutar) });
+    }
+
+    // --- BARKOD & SİSTEM BAŞLATICI ---
+    function startScanner() {
+        Quagga.init({
+            inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#interactive'), constraints: { facingMode: "environment" } },
+            decoder: { readers: ["ean_reader", "code_128_reader", "ean_8_reader"] }
+        }, err => { if(!err) Quagga.start(); });
+
+        Quagga.onDetected(res => {
+            document.getElementById('pos-input').value = res.codeResult.code;
+            // Buraya otomatik sepet ekleme lojiği gelecek
+        });
+    }
+
+    function logout() { auth.signOut().then(() => location.reload()); }
+    function register() { /* Orijinal kayıt lojiği */ }
+</script>
 </body>
 </html>
