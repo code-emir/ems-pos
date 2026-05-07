@@ -1,853 +1,389 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EMS ERP FULL</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EMS ERP Enterprise | Licensed to Emirhan Bozdayı</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
-
-<style>
-:root{
---bg:#0b1220;
---card:#111827;
---blue:#2563eb;
---green:#10b981;
---red:#ef4444;
---border:#1f2937;
-}
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial;
-}
-
-body{
-background:var(--bg);
-color:white;
-overflow:hidden;
-height:100vh;
-display:flex;
-flex-direction:column;
-}
-
-nav{
-background:#111827;
-padding:10px;
-display:flex;
-gap:10px;
-overflow:auto;
-border-bottom:1px solid var(--border);
-}
-
-nav button{
-background:var(--blue);
-border:none;
-padding:10px;
-color:white;
-border-radius:8px;
-cursor:pointer;
-white-space:nowrap;
-}
-
-.screen{
-display:none;
-padding:15px;
-overflow:auto;
-flex:1;
-}
-
-.active{
-display:block;
-}
-
-.card{
-background:var(--card);
-padding:15px;
-border-radius:15px;
-margin-bottom:15px;
-border:1px solid var(--border);
-}
-
-input,select{
-width:100%;
-padding:12px;
-margin-top:10px;
-border:none;
-border-radius:10px;
-background:#1e293b;
-color:white;
-}
-
-button{
-cursor:pointer;
-}
-
-.btn{
-padding:12px;
-border:none;
-border-radius:10px;
-margin-top:10px;
-width:100%;
-font-weight:bold;
-}
-
-.btn-blue{
-background:var(--blue);
-color:white;
-}
-
-.btn-green{
-background:var(--green);
-color:white;
-}
-
-.btn-red{
-background:var(--red);
-color:white;
-}
-
-.table{
-width:100%;
-border-collapse:collapse;
-margin-top:15px;
-}
-
-.table th,.table td{
-padding:10px;
-border-bottom:1px solid #333;
-text-align:left;
-}
-
-#auth-screen{
-position:fixed;
-inset:0;
-background:#000;
-display:flex;
-align-items:center;
-justify-content:center;
-z-index:9999;
-}
-
-.auth-box{
-width:90%;
-max-width:400px;
-background:#111827;
-padding:25px;
-border-radius:20px;
-border:1px solid var(--border);
-}
-
-#interactive{
-height:220px;
-background:black;
-border-radius:10px;
-overflow:hidden;
-}
-
-.badge{
-padding:8px 15px;
-background:var(--green);
-display:inline-block;
-border-radius:30px;
-margin-top:10px;
-font-size:12px;
-}
-</style>
+    <style>
+        :root { --accent: #3b82f6; --bg: #090b10; --panel: #131722; --border: #242b3d; --success: #10b981; --danger: #ef4444; }
+        body { background: var(--bg); color: #f1f5f9; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
+        
+        /* AUTH SCREEN - FIXED AS REQUESTED */
+        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: var(--panel); padding: 40px; border-radius: 24px; width: 400px; border: 1px solid var(--border); text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        
+        /* ERP INTERFACE */
+        .sidebar-item { transition: 0.2s; cursor: pointer; border-radius: 12px; margin-bottom: 4px; padding: 14px; font-weight: 600; color: #94a3b8; display: flex; align-items: center; gap: 12px; }
+        .sidebar-item:hover { background: rgba(59, 130, 246, 0.1); color: var(--accent); }
+        .sidebar-item.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        
+        .glass-card { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; transition: 0.3s; }
+        .glass-card:hover { border-color: var(--accent); }
+        
+        /* SEKTÖREL MASA TASARIMI */
+        .table-obj { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 24px; border: 3px solid var(--border); cursor: pointer; transition: 0.2s; position: relative; }
+        .table-obj.occupied { border-color: var(--danger); background: rgba(239, 68, 68, 0.05); }
+        .table-obj.occupied i { color: var(--danger); }
+        .table-obj.selected { border-color: var(--accent); background: rgba(59, 130, 246, 0.1); }
+        
+        /* SCROLLBAR CUSTOMIZATION */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        
+        input, select { background: #0a0e17; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 12px; width: 100%; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--accent); ring: 2px var(--accent); }
+    </style>
 </head>
-
-<body>
+<body class="flex flex-col">
 
 <div id="auth-screen">
+    <div class="auth-card">
+        <div class="text-4xl font-black italic text-blue-500 mb-2">EMS ERP</div>
+        <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-8">Professional Enterprise System</p>
+        
+        <div id="login-form" class="space-y-4">
+            <input type="email" id="email" placeholder="Kurumsal E-posta">
+            <input type="password" id="pass" placeholder="Sistem Şifresi">
+            <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-bold shadow-lg">SİSTEME GİRİŞ</button>
+            <p onclick="toggleForm(true)" class="text-xs text-slate-400 cursor-pointer hover:text-blue-500 mt-4">Yeni Lisans Al / Kayıt Ol</p>
+        </div>
 
-<div class="auth-box">
-
-<h1 style="text-align:center;color:#2563eb;">EMS ERP</h1>
-
-<div id="login-form">
-
-<input type="email" id="email" placeholder="E-posta">
-<input type="password" id="pass" placeholder="Şifre">
-
-<button class="btn btn-blue" onclick="login()">Giriş Yap</button>
-
-<p onclick="toggleForm(true)"
-style="margin-top:15px;text-align:center;color:#2563eb;cursor:pointer;">
-Yeni İşletme Kaydı
-</p>
-
+        <div id="reg-form" class="hidden space-y-3">
+            <input type="text" id="r-name" placeholder="İşletme Ticari Adı">
+            <select id="r-type">
+                <option value="market">Market & Barkodlu Perakende</option>
+                <option value="manav">Manav (Terazi & Gramaj Odaklı)</option>
+                <option value="kafe">Kafe & Bistro (Hızlı Sipariş)</option>
+                <option value="restoran">Restoran (Masa & Garson Yönetimi)</option>
+            </select>
+            <input type="email" id="r-email" placeholder="Yönetici E-posta">
+            <input type="password" id="r-pass" placeholder="Güçlü Şifre">
+            <button onclick="register()" class="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-xl font-bold">LİSANS KAYDI OLUŞTUR</button>
+            <p onclick="toggleForm(false)" class="text-xs text-slate-400 cursor-pointer">Giriş Ekranına Dön</p>
+        </div>
+    </div>
 </div>
 
-<div id="reg-form" style="display:none;">
-
-<input type="text" id="r-name" placeholder="İşletme Adı">
-
-<select id="r-type">
-<option value="market">Market / Bakkal</option>
-<option value="manav">Manav</option>
-<option value="restoran">Restoran / Kafe</option>
-<option value="teknikservis">Teknik Servis</option>
-</select>
-
-<input type="email" id="r-email" placeholder="E-posta">
-<input type="password" id="r-pass" placeholder="Şifre">
-
-<button class="btn btn-green" onclick="register()">Kayıt Ol</button>
-
-<p onclick="toggleForm(false)"
-style="margin-top:15px;text-align:center;color:#2563eb;cursor:pointer;">
-Girişe Dön
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-<nav>
-
-<button onclick="showScreen('dashboard')">Panel</button>
-<button onclick="showScreen('pos')">POS</button>
-<button onclick="showScreen('products')">Ürün</button>
-<button onclick="showScreen('tables')">Masalar</button>
-<button onclick="showScreen('service')">Servis</button>
-<button onclick="showScreen('finance')">Finans</button>
-<button onclick="showScreen('staff')">Personel</button>
-<button onclick="showScreen('reports')">Rapor</button>
-<button onclick="logout()">Çıkış</button>
-
+<nav class="h-20 border-b border-slate-800 px-8 flex items-center justify-between z-50">
+    <div class="flex items-center gap-4">
+        <div class="bg-blue-600 text-white font-black italic px-4 py-2 rounded-lg">EMS</div>
+        <div>
+            <h1 id="biz-title" class="font-bold text-lg leading-none uppercase">Ticari Otomasyon</h1>
+            <span id="sector-badge" class="text-[10px] text-blue-500 font-bold tracking-tighter">LİSANSLI SÜRÜM</span>
+        </div>
+    </div>
+    
+    <div class="flex items-center gap-8">
+        <div class="text-right">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Lisans Sahibi</p>
+            <p class="text-sm font-bold text-slate-200">Emirhan Bozdayı</p>
+        </div>
+        <button onclick="logout()" class="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white transition">GÜVENLİ ÇIKIŞ</button>
+    </div>
 </nav>
 
-<!-- DASHBOARD -->
+<div class="flex flex-1 overflow-hidden">
+    <aside class="w-72 border-r border-slate-800 p-6 flex flex-col justify-between">
+        <div class="space-y-1">
+            <div onclick="switchTab('dash')" id="btn-dash" class="sidebar-item active"><i class="fa-solid fa-chart-pie w-6"></i> Dashboard</div>
+            <div onclick="switchTab('pos')" id="btn-pos" class="sidebar-item"><i class="fa-solid fa-bolt w-6"></i> Hızlı Satış</div>
+            <div onclick="switchTab('tables')" id="btn-tables" class="sidebar-item sector-only-res"><i class="fa-solid fa-chair w-6"></i> Masa Planı</div>
+            <div onclick="switchTab('stok')" id="btn-stok" class="sidebar-item"><i class="fa-solid fa-box w-6"></i> Stok & Depo</div>
+            <div onclick="switchTab('cari')" id="btn-cari" class="sidebar-item"><i class="fa-solid fa-users w-6"></i> Cari Rehber</div>
+            <div onclick="switchTab('reports')" id="btn-reports" class="sidebar-item"><i class="fa-solid fa-file-invoice-dollar w-6"></i> Raporlar</div>
+        </div>
+        
+        <div class="glass-card p-4">
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-2">Sistem Durumu</p>
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span class="text-xs font-bold">Cloud Server Active</span>
+            </div>
+        </div>
+    </aside>
 
-<section id="dashboard" class="screen active">
+    <main class="flex-1 overflow-y-auto p-8 relative">
+        
+        <section id="sec-dash" class="screen active">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="glass-card p-6">
+                    <span class="text-xs text-slate-500 font-bold uppercase">Günlük Ciro</span>
+                    <h2 class="text-3xl font-black text-emerald-500 mt-2">₺0,00</h2>
+                </div>
+                <div class="glass-card p-6">
+                    <span class="text-xs text-slate-500 font-bold uppercase">Toplam Alacak</span>
+                    <h2 id="total-receivable" class="text-3xl font-black text-red-500 mt-2">₺0,00</h2>
+                </div>
+                <div class="glass-card p-6">
+                    <span class="text-xs text-slate-500 font-bold uppercase">Kritik Stok</span>
+                    <h2 class="text-3xl font-black text-amber-500 mt-2">0 Ürün</h2>
+                </div>
+                <div class="glass-card p-6">
+                    <span class="text-xs text-slate-500 font-bold uppercase">Açık Hesaplar</span>
+                    <h2 id="open-tables-count" class="text-3xl font-black text-blue-500 mt-2">0</h2>
+                </div>
+            </div>
+        </section>
 
-<div class="card">
+        <section id="sec-pos" class="hidden screen h-full flex flex-col gap-6">
+            <div class="flex gap-6 h-full">
+                <div class="flex-1 flex flex-col gap-4">
+                    <div class="glass-card p-6 flex items-center gap-6">
+                        <div id="interactive" class="w-48 h-32 bg-black rounded-2xl overflow-hidden border-2 border-blue-500 relative shadow-2xl">
+                             <div class="absolute inset-0 flex items-center justify-center text-[10px] text-slate-700">SCANNER ACTIVE</div>
+                        </div>
+                        <div class="flex-1 space-y-3">
+                            <input type="text" id="pos-barcode" placeholder="Barkod Okutun veya Ürün Adı Yazın..." class="text-xl font-bold py-4">
+                            <div class="flex gap-2">
+                                <button onclick="toggleWeightMode()" id="weight-toggle" class="bg-slate-800 text-slate-400 text-[10px] font-black px-4 py-2 rounded-full border border-slate-700">TERAZİ: PASİF</button>
+                                <span class="text-[10px] text-slate-500 self-center uppercase font-bold italic">Auto-Sync Enabled</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 glass-card overflow-hidden flex flex-col">
+                        <div class="p-4 bg-slate-900/50 border-b border-slate-800 flex justify-between text-[10px] font-black text-slate-500">
+                            <span>ÜRÜN DETAYI</span>
+                            <div class="flex gap-20"><span>MİKTAR</span><span>TOPLAM</span></div>
+                        </div>
+                        <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-2">
+                            </div>
+                    </div>
+                </div>
+                <div class="w-[400px] glass-card p-8 flex flex-col justify-between shadow-2xl">
+                    <div class="space-y-6">
+                        <div class="text-center">
+                            <p class="text-slate-500 text-xs font-bold uppercase tracking-tighter">Genel Toplam</p>
+                            <h2 id="grand-total" class="text-6xl font-black text-emerald-500 tracking-tighter">₺0,00</h2>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button class="bg-emerald-600 hover:bg-emerald-700 p-6 rounded-2xl font-black text-lg transition-all active:scale-95 shadow-lg shadow-emerald-900/20">NAKİT</button>
+                            <button class="bg-blue-600 hover:bg-blue-700 p-6 rounded-2xl font-black text-lg transition-all active:scale-95 shadow-lg shadow-blue-900/20">K. KARTI</button>
+                        </div>
+                        <button onclick="sendToVeresiye()" class="w-full bg-red-600/10 text-red-500 border border-red-500/20 p-5 rounded-2xl font-black hover:bg-red-600 hover:text-white transition-all">VERESİYE OLARAK KAYDET</button>
+                    </div>
+                    <div class="border-t border-slate-800 pt-6">
+                        <div class="flex justify-between text-sm font-bold text-slate-400">
+                            <span>İndirim:</span><span>₺0,00</span>
+                        </div>
+                        <div class="flex justify-between text-sm font-bold text-slate-400">
+                            <span>KDV (%20):</span><span>₺0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-<h2 id="biz-name">EMS ERP</h2>
+        <section id="sec-tables" class="hidden screen">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h3 class="text-2xl font-black uppercase tracking-tighter">Masa Planı & Salon Yönetimi</h3>
+                    <p class="text-xs text-slate-500 font-bold">Anlık doluluk ve sipariş takibi</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="addTable()" class="bg-blue-600 p-4 px-8 rounded-xl font-bold hover:scale-105 transition">+ Masa Ekle</button>
+                </div>
+            </div>
+            <div id="table-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                </div>
+        </section>
 
-<p id="biz-type"></p>
+        <section id="sec-cari" class="hidden screen">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-2xl font-black">Cari Hesap Rehberi</h3>
+                <button onclick="addNewCari()" class="bg-blue-600 p-4 px-8 rounded-xl font-bold">+ Yeni Cari Kartı</button>
+            </div>
+            <div class="glass-card overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-900/80">
+                        <tr>
+                            <th class="p-6 text-xs text-slate-500 font-bold">MÜŞTERİ / UNVAN</th>
+                            <th class="p-6 text-xs text-slate-500 font-bold text-right">GÜNCEL BAKİYE</th>
+                            <th class="p-6 text-xs text-slate-500 font-bold text-center">İŞLEMLER</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cari-list" class="divide-y divide-slate-800/50"></tbody>
+                </table>
+            </div>
+        </section>
 
-<div id="sector-badge"></div>
-
+    </main>
 </div>
-
-<div class="card">
-<h3>İstatistikler</h3>
-<p>Toplam Ürün: <span id="total-products">0</span></p>
-<p>Toplam Servis: <span id="total-services">0</span></p>
-<p>Toplam Masa: <span id="total-tables">0</span></p>
-</div>
-
-</section>
-
-<!-- POS -->
-
-<section id="pos" class="screen">
-
-<div class="card">
-
-<h3>Barkod POS Sistemi</h3>
-
-<div id="interactive"></div>
-
-<input id="barcode-input" placeholder="Barkod veya ürün adı">
-
-<button class="btn btn-green" onclick="addSale()">
-Satışa Ekle
-</button>
-
-<table class="table">
-
-<thead>
-<tr>
-<th>Ürün</th>
-<th>Fiyat</th>
-</tr>
-</thead>
-
-<tbody id="sale-list"></tbody>
-
-</table>
-
-<h2 style="margin-top:20px;">
-Toplam: <span id="total-price">0</span> TL
-</h2>
-
-</div>
-
-</section>
-
-<!-- ÜRÜNLER -->
-
-<section id="products" class="screen">
-
-<div class="card">
-
-<h3>Ürün Yönetimi</h3>
-
-<input id="p-name" placeholder="Ürün Adı">
-<input id="p-price" placeholder="Fiyat">
-<input id="p-stock" placeholder="Stok">
-<input id="p-barcode" placeholder="Barkod">
-
-<button class="btn btn-blue" onclick="addProduct()">
-Ürün Ekle
-</button>
-
-</div>
-
-<div class="card">
-
-<table class="table">
-
-<thead>
-<tr>
-<th>Ürün</th>
-<th>Fiyat</th>
-<th>Stok</th>
-</tr>
-</thead>
-
-<tbody id="product-table"></tbody>
-
-</table>
-
-</div>
-
-</section>
-
-<!-- RESTORAN -->
-
-<section id="tables" class="screen">
-
-<div class="card">
-
-<h3>Masa Yönetimi</h3>
-
-<input id="table-name" placeholder="Masa Adı">
-
-<button class="btn btn-green" onclick="addTable()">
-Masa Ekle
-</button>
-
-<div id="table-list"></div>
-
-</div>
-
-</section>
-
-<!-- TEKNİK SERVİS -->
-
-<section id="service" class="screen">
-
-<div class="card">
-
-<h3>Teknik Servis Kayıt</h3>
-
-<input id="customer-name" placeholder="Müşteri">
-<input id="device-name" placeholder="Cihaz">
-<input id="problem" placeholder="Arıza">
-
-<button class="btn btn-blue" onclick="addService()">
-Servis Kaydı Aç
-</button>
-
-</div>
-
-<div class="card">
-
-<table class="table">
-
-<thead>
-<tr>
-<th>Müşteri</th>
-<th>Cihaz</th>
-<th>Durum</th>
-</tr>
-</thead>
-
-<tbody id="service-table"></tbody>
-
-</table>
-
-</div>
-
-</section>
-
-<!-- FİNANS -->
-
-<section id="finance" class="screen">
-
-<div class="card">
-
-<h3>Gelir / Gider</h3>
-
-<input id="income" placeholder="Gelir">
-<button class="btn btn-green" onclick="addIncome()">
-Gelir Ekle
-</button>
-
-<input id="expense" placeholder="Gider">
-<button class="btn btn-red" onclick="addExpense()">
-Gider Ekle
-</button>
-
-</div>
-
-</section>
-
-<!-- PERSONEL -->
-
-<section id="staff" class="screen">
-
-<div class="card">
-
-<h3>Personel Yönetimi</h3>
-
-<input id="staff-name" placeholder="Personel Adı">
-
-<button class="btn btn-blue" onclick="addStaff()">
-Personel Ekle
-</button>
-
-<div id="staff-list"></div>
-
-</div>
-
-</section>
-
-<!-- RAPOR -->
-
-<section id="reports" class="screen">
-
-<div class="card">
-
-<h3>Rapor Sistemi</h3>
-
-<button class="btn btn-green" onclick="generateReport()">
-Günlük Rapor Oluştur
-</button>
-
-<div id="report-box"></div>
-
-</div>
-
-</section>
 
 <script>
-
-const firebaseConfig = {
-apiKey: "AIzaSyCkwCPXxUayvLclNMgC-6yk-m5STG_7NLI",
-authDomain: "ems-pos-5b50b.firebaseapp.com",
-projectId: "ems-pos-5b50b",
-storageBucket: "ems-pos-5b50b.firebasestorage.app",
-messagingSenderId: "444531568303",
-appId: "1:444531568303:web:dba6979ace54e0aeae2e5a"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-let currentUser = null;
-let total = 0;
-
-function toggleForm(isReg){
-
-document.getElementById('login-form').style.display =
-isReg ? 'none' : 'block';
-
-document.getElementById('reg-form').style.display =
-isReg ? 'block' : 'none';
-
-}
-
-function register(){
-
-const email=document.getElementById('r-email').value;
-const pass=document.getElementById('r-pass').value;
-const name=document.getElementById('r-name').value;
-const type=document.getElementById('r-type').value;
-
-if(!email || !pass || !name){
-alert("Alanları doldurun");
-return;
-}
-
-auth.createUserWithEmailAndPassword(email,pass)
-
-.then(res=>{
-
-db.collection("isletmeler")
-.doc(res.user.uid)
-.set({
-name:name,
-type:type,
-onayli:false,
-email:email,
-kayitTarihi:new Date().toISOString()
-})
-
-.then(()=>{
-
-alert("Kayıt başarılı. Onay bekleniyor.");
-
-auth.signOut();
-
-location.reload();
-
-});
-
-})
-
-.catch(err=>alert(err.message));
-
-}
-
-function login(){
-
-const email=document.getElementById('email').value;
-const pass=document.getElementById('pass').value;
-
-auth.signInWithEmailAndPassword(email,pass)
-
-.then(res=>{
-
-db.collection("isletmeler")
-.doc(res.user.uid)
-.get()
-
-.then(doc=>{
-
-if(doc.exists && doc.data().onayli===true){
-
-currentUser=res.user.uid;
-
-document.getElementById('auth-screen').style.display='none';
-
-document.getElementById('biz-name').innerText =
-doc.data().name;
-
-document.getElementById('biz-type').innerText =
-"İşletme Türü: " + doc.data().type.toUpperCase();
-
-setupSector(doc.data().type);
-
-startScanner();
-
-loadProducts();
-
-loadServices();
-
-loadTables();
-
-}else{
-
-alert("Hesap onaylanmamış");
-
-auth.signOut();
-
-}
-
-});
-
-})
-
-.catch(err=>alert(err.message));
-
-}
-
-function setupSector(type){
-
-let text="";
-
-if(type==="market") text="MARKET MODU";
-if(type==="manav") text="MANAV MODU";
-if(type==="restoran") text="RESTORAN MODU";
-if(type==="teknikservis") text="TEKNİK SERVİS MODU";
-
-document.getElementById('sector-badge').innerHTML =
-'<div class="badge">'+text+'</div>';
-
-}
-
-function startScanner(){
-
-Quagga.init({
-
-inputStream:{
-name:"Live",
-type:"LiveStream",
-target:document.querySelector('#interactive')
-},
-
-decoder:{
-readers:["ean_reader","code_128_reader"]
-}
-
-},
-
-err=>{
-
-if(err){
-console.log(err);
-return;
-}
-
-Quagga.start();
-
-});
-
-Quagga.onDetected(data=>{
-
-document.getElementById('barcode-input').value =
-data.codeResult.code;
-
-});
-
-}
-
-function addSale(){
-
-const code=document.getElementById('barcode-input').value;
-
-if(!code) return;
-
-total += 100;
-
-document.getElementById('sale-list').innerHTML += `
-<tr>
-<td>${code}</td>
-<td>100 TL</td>
-</tr>
-`;
-
-document.getElementById('total-price').innerText=total;
-
-document.getElementById('barcode-input').value='';
-
-}
-
-function addProduct(){
-
-const name=document.getElementById('p-name').value;
-const price=document.getElementById('p-price').value;
-const stock=document.getElementById('p-stock').value;
-const barcode=document.getElementById('p-barcode').value;
-
-db.collection("urunler").add({
-uid:currentUser,
-name,
-price,
-stock,
-barcode
-})
-
-.then(()=>{
-
-alert("Ürün eklendi");
-
-loadProducts();
-
-});
-
-}
-
-function loadProducts(){
-
-db.collection("urunler")
-.where("uid","==",currentUser)
-.get()
-
-.then(snap=>{
-
-let html='';
-
-document.getElementById('total-products').innerText =
-snap.size;
-
-snap.forEach(doc=>{
-
-const d=doc.data();
-
-html += `
-<tr>
-<td>${d.name}</td>
-<td>${d.price} TL</td>
-<td>${d.stock}</td>
-</tr>
-`;
-
-});
-
-document.getElementById('product-table').innerHTML=html;
-
-});
-
-}
-
-function addTable(){
-
-const name=document.getElementById('table-name').value;
-
-db.collection("masalar").add({
-uid:currentUser,
-name:name,
-status:"BOŞ"
-})
-
-.then(()=>{
-
-loadTables();
-
-});
-
-}
-
-function loadTables(){
-
-db.collection("masalar")
-.where("uid","==",currentUser)
-.get()
-
-.then(snap=>{
-
-document.getElementById('total-tables').innerText =
-snap.size;
-
-let html='';
-
-snap.forEach(doc=>{
-
-const d=doc.data();
-
-html += `
-<div class="card">
-${d.name} - ${d.status}
-</div>
-`;
-
-});
-
-document.getElementById('table-list').innerHTML=html;
-
-});
-
-}
-
-function addService(){
-
-const customer=document.getElementById('customer-name').value;
-const device=document.getElementById('device-name').value;
-const problem=document.getElementById('problem').value;
-
-db.collection("servisler").add({
-uid:currentUser,
-customer,
-device,
-problem,
-status:"Bekliyor"
-})
-
-.then(()=>{
-
-loadServices();
-
-});
-
-}
-
-function loadServices(){
-
-db.collection("servisler")
-.where("uid","==",currentUser)
-.get()
-
-.then(snap=>{
-
-document.getElementById('total-services').innerText =
-snap.size;
-
-let html='';
-
-snap.forEach(doc=>{
-
-const d=doc.data();
-
-html += `
-<tr>
-<td>${d.customer}</td>
-<td>${d.device}</td>
-<td>${d.status}</td>
-</tr>
-`;
-
-});
-
-document.getElementById('service-table').innerHTML=html;
-
-});
-
-}
-
-function addIncome(){
-
-alert("Gelir eklendi");
-
-}
-
-function addExpense(){
-
-alert("Gider eklendi");
-
-}
-
-function addStaff(){
-
-const name=document.getElementById('staff-name').value;
-
-document.getElementById('staff-list').innerHTML += `
-<div class="card">${name}</div>
-`;
-
-}
-
-function generateReport(){
-
-document.getElementById('report-box').innerHTML = `
-<div class="card">
-Bugünkü satış toplamı: ${total} TL
-</div>
-`;
-
-}
-
-function showScreen(id){
-
-document.querySelectorAll('.screen').forEach(s=>{
-s.classList.remove('active');
-});
-
-document.getElementById(id).classList.add('active');
-
-}
-
-function logout(){
-
-auth.signOut()
-.then(()=>location.reload());
-
-}
-
+    // MASTER CONFIG
+    const firebaseConfig = {
+        apiKey: "AIzaSyCkwCPXxUayvLclNMgC-6yk-m5STG_7NLI",
+        authDomain: "ems-pos-5b50b.firebaseapp.com",
+        projectId: "ems-pos-5b50b",
+        storageBucket: "ems-pos-5b50b.firebasestorage.app",
+        messagingSenderId: "444531568303",
+        appId: "1:444531568303:web:dba6979ace54e0aeae2e5a"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    let currentBiz = null;
+    let weightMode = false;
+
+    // AUTH ENGINE
+    function toggleForm(isReg) {
+        document.getElementById('login-form').style.display = isReg ? 'none' : 'block';
+        document.getElementById('reg-form').style.display = isReg ? 'block' : 'none';
+    }
+
+    function register() {
+        const email = document.getElementById('r-email').value;
+        const pass = document.getElementById('r-pass').value;
+        const name = document.getElementById('r-name').value;
+        const type = document.getElementById('r-type').value;
+
+        auth.createUserWithEmailAndPassword(email, pass).then(res => {
+            db.collection("isletmeler").doc(res.user.uid).set({
+                name: name, sector: type, owner: "Emirhan Bozdayı", approved: false, created: new Date().toISOString()
+            }).then(() => {
+                alert("Lisans kaydı alındı. Emirhan Bozdayı onayı sonrası aktifleşecektir.");
+                auth.signOut();
+                location.reload();
+            });
+        }).catch(e => alert(e.message));
+    }
+
+    function login() {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('pass').value;
+
+        auth.signInWithEmailAndPassword(email, pass).then(res => {
+            db.collection("isletmeler").doc(res.user.uid).get().then(doc => {
+                if(doc.exists && doc.data().approved) {
+                    currentBiz = { id: res.user.uid, ...doc.data() };
+                    startERP();
+                } else {
+                    alert("Lisans Onayı Bekleniyor!");
+                    auth.signOut();
+                }
+            });
+        }).catch(e => alert("Giriş Başarısız: " + e.message));
+    }
+
+    // ERP CORE FUNCTIONS
+    function startERP() {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('biz-title').innerText = currentBiz.name;
+        document.getElementById('sector-badge').innerText = currentBiz.sector.toUpperCase() + " ENTERPRISE";
+        
+        // Sektörel Filtreleme
+        if(currentBiz.sector !== 'restoran' && currentBiz.sector !== 'kafe') {
+            document.getElementById('btn-tables').style.display = 'none';
+        }
+
+        initRealtimeListeners();
+        startScanner();
+    }
+
+    function switchTab(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+        document.getElementById('sec-' + id).classList.remove('hidden');
+        document.getElementById('btn-' + id).classList.add('active');
+    }
+
+    // REALTIME ENGINE (DATA SYNC)
+    function initRealtimeListeners() {
+        // Cari Takibi
+        db.collection("isletmeler").doc(currentBiz.id).collection("cariler")
+        .onSnapshot(snap => {
+            const list = document.getElementById('cari-list');
+            list.innerHTML = "";
+            let total = 0;
+            snap.forEach(doc => {
+                const c = doc.data();
+                total += parseFloat(c.borc || 0);
+                list.innerHTML += `
+                    <tr class="hover:bg-slate-800/30 transition-all">
+                        <td class="p-6 font-bold text-slate-300">${c.isim}</td>
+                        <td class="p-6 text-right font-black text-red-500">₺${parseFloat(c.borc).toLocaleString('tr-TR')}</td>
+                        <td class="p-6 text-center">
+                            <button onclick="makeTahsilat('${doc.id}', ${c.borc})" class="bg-blue-600/10 text-blue-500 text-[10px] font-black px-4 py-2 rounded-lg border border-blue-500/20 hover:bg-blue-600 hover:text-white">TAHSİLAT</button>
+                        </td>
+                    </tr>`;
+            });
+            document.getElementById('total-receivable').innerText = "₺" + total.toLocaleString('tr-TR');
+        });
+
+        // Masa Takibi
+        db.collection("isletmeler").doc(currentBiz.id).collection("masalar")
+        .onSnapshot(snap => {
+            const grid = document.getElementById('table-grid');
+            grid.innerHTML = "";
+            let open = 0;
+            snap.forEach(doc => {
+                const m = doc.data();
+                if(m.tutar > 0) open++;
+                grid.innerHTML += `
+                    <div class="table-obj ${m.tutar > 0 ? 'occupied' : ''}" onclick="manageTable('${doc.id}', ${m.tutar})">
+                        <i class="fa-solid fa-utensils text-3xl mb-2 text-slate-700"></i>
+                        <span class="font-black text-sm">${m.no}</span>
+                        <span class="text-[10px] font-bold ${m.tutar > 0 ? 'text-red-500' : 'text-slate-500'}">
+                            ${m.tutar > 0 ? '₺' + m.tutar : 'BOŞ'}
+                        </span>
+                    </div>`;
+            });
+            document.getElementById('open-tables-count').innerText = open;
+        });
+    }
+
+    // TERAZİ & POS LOJİĞİ
+    function toggleWeightMode() {
+        weightMode = !weightMode;
+        const btn = document.getElementById('weight-toggle');
+        btn.innerText = weightMode ? "TERAZİ: AKTİF (KG)" : "TERAZİ: PASİF";
+        btn.className = weightMode ? "bg-emerald-600 text-white text-[10px] font-black px-4 py-2 rounded-full shadow-lg shadow-emerald-900/40" : "bg-slate-800 text-slate-400 text-[10px] font-black px-4 py-2 rounded-full border border-slate-700";
+    }
+
+    // CARI & MASA İŞLEMLERİ (PROFESYONEL)
+    function addNewCari() {
+        const isim = prompt("Cari Kart Adı / Ticari Unvan:");
+        if(isim) db.collection("isletmeler").doc(currentBiz.id).collection("cariler").add({ isim, borc: 0 });
+    }
+
+    function addTable() {
+        const no = prompt("Masa Numarası veya Bölge Adı:");
+        if(no) db.collection("isletmeler").doc(currentBiz.id).collection("masalar").add({ no, tutar: 0 });
+    }
+
+    function manageTable(id, current) {
+        const amount = prompt("Masaya eklenecek tutar (veya hesap kapatmak için negatif değer girin):");
+        if(amount) {
+            const newTotal = Math.max(0, current + parseFloat(amount));
+            db.collection("isletmeler").doc(currentBiz.id).collection("masalar").doc(id).update({ tutar: newTotal });
+        }
+    }
+
+    function makeTahsilat(id, current) {
+        const amount = prompt("Tahsilat Tutarı:");
+        if(amount) db.collection("isletmeler").doc(currentBiz.id).collection("cariler").doc(id).update({ borc: current - parseFloat(amount) });
+    }
+
+    // BARKOD SCANNER
+    function startScanner() {
+        Quagga.init({
+            inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#interactive'), constraints: { facingMode: "environment" } },
+            decoder: { readers: ["ean_reader", "code_128_reader", "ean_8_reader"] }
+        }, err => { if(!err) Quagga.start(); });
+    }
+
+    function logout() { auth.signOut().then(() => location.reload()); }
 </script>
-
 </body>
 </html>
