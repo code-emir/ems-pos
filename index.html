@@ -1,303 +1,853 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EMS ERP Enterprise | Licensed to Emirhan Bozdayı</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMS ERP FULL</title>
 
-    <style>
-        :root { --accent: #3b82f6; --bg: #090b10; --panel: #131722; --text: #f1f5f9; --success: #10b981; --danger: #ef4444; --border: #242b3d; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* LOGIN EKRANI (ORİJİNAL TASARIMIN) */
-        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: var(--panel); padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid var(--border); text-align: center; }
-        
-        nav { background: var(--panel); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); }
-        .screen { display: none; flex: 1; padding: 20px; gap: 20px; overflow-y: auto; }
-        .screen.active { display: flex; flex-direction: column; }
-        
-        input, select { background: #0f172a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 100%; margin-top: 10px; outline: none; }
-        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s; }
-        .btn-blue { background: var(--accent); color: white; }
-        .btn-green { background: var(--success); color: white; }
-        .btn-red { background: var(--danger); color: white; }
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 
-        /* MASA VE STOK KARTLARI */
-        .table-card { background: var(--panel); border: 2px solid var(--border); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; position: relative; }
-        .table-card.occupied { border-color: var(--danger); background: #ef444410; }
-        .sidebar-btn { padding: 15px; border-radius: 12px; text-align: left; color: #64748b; font-weight: bold; cursor: pointer; }
-        .sidebar-btn.active { background: var(--accent); color: white; }
-        
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .product-card { background: var(--panel); border: 1px solid var(--border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; }
-    </style>
+<style>
+:root{
+--bg:#0b1220;
+--card:#111827;
+--blue:#2563eb;
+--green:#10b981;
+--red:#ef4444;
+--border:#1f2937;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial;
+}
+
+body{
+background:var(--bg);
+color:white;
+overflow:hidden;
+height:100vh;
+display:flex;
+flex-direction:column;
+}
+
+nav{
+background:#111827;
+padding:10px;
+display:flex;
+gap:10px;
+overflow:auto;
+border-bottom:1px solid var(--border);
+}
+
+nav button{
+background:var(--blue);
+border:none;
+padding:10px;
+color:white;
+border-radius:8px;
+cursor:pointer;
+white-space:nowrap;
+}
+
+.screen{
+display:none;
+padding:15px;
+overflow:auto;
+flex:1;
+}
+
+.active{
+display:block;
+}
+
+.card{
+background:var(--card);
+padding:15px;
+border-radius:15px;
+margin-bottom:15px;
+border:1px solid var(--border);
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:10px;
+background:#1e293b;
+color:white;
+}
+
+button{
+cursor:pointer;
+}
+
+.btn{
+padding:12px;
+border:none;
+border-radius:10px;
+margin-top:10px;
+width:100%;
+font-weight:bold;
+}
+
+.btn-blue{
+background:var(--blue);
+color:white;
+}
+
+.btn-green{
+background:var(--green);
+color:white;
+}
+
+.btn-red{
+background:var(--red);
+color:white;
+}
+
+.table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+}
+
+.table th,.table td{
+padding:10px;
+border-bottom:1px solid #333;
+text-align:left;
+}
+
+#auth-screen{
+position:fixed;
+inset:0;
+background:#000;
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:9999;
+}
+
+.auth-box{
+width:90%;
+max-width:400px;
+background:#111827;
+padding:25px;
+border-radius:20px;
+border:1px solid var(--border);
+}
+
+#interactive{
+height:220px;
+background:black;
+border-radius:10px;
+overflow:hidden;
+}
+
+.badge{
+padding:8px 15px;
+background:var(--green);
+display:inline-block;
+border-radius:30px;
+margin-top:10px;
+font-size:12px;
+}
+</style>
 </head>
+
 <body>
 
 <div id="auth-screen">
-    <div class="auth-card">
-        <h1 style="color:var(--accent)">EMS ERP</h1>
-        <p style="font-size:12px; color:#64748b; margin-bottom:20px;">Lisanslı İşletme Yönetim Sistemi</p>
-        
-        <div id="login-form">
-            <input type="email" id="email" placeholder="E-posta">
-            <input type="password" id="pass" placeholder="Şifre">
-            <button class="btn btn-blue" onclick="login()">GİRİŞ YAP</button>
-            <p onclick="toggleForm(true)" style="margin-top:15px; font-size:12px; cursor:pointer; color:var(--accent)">Yeni İşletme Kaydı Yap</p>
-        </div>
 
-        <div id="reg-form" style="display:none">
-            <input type="text" id="r-name" placeholder="İşletme Adı">
-            <select id="r-type">
-                <option value="market">Market / Perakende</option>
-                <option value="manav">Manav (Hassas Terazi)</option>
-                <option value="kafe">Kafe / Fast Food</option>
-                <option value="restoran">Restoran (Masa Yönetimi)</option>
-            </select>
-            <input type="email" id="r-email" placeholder="E-posta">
-            <input type="password" id="r-pass" placeholder="Şifre">
-            <button class="btn btn-green" onclick="register()">KAYIT OL</button>
-            <p onclick="toggleForm(false)" style="margin-top:15px; font-size:12px; cursor:pointer; color:var(--accent)">Giriş Ekranına Dön</p>
-        </div>
-    </div>
+<div class="auth-box">
+
+<h1 style="text-align:center;color:#2563eb;">EMS ERP</h1>
+
+<div id="login-form">
+
+<input type="email" id="email" placeholder="E-posta">
+<input type="password" id="pass" placeholder="Şifre">
+
+<button class="btn btn-blue" onclick="login()">Giriş Yap</button>
+
+<p onclick="toggleForm(true)"
+style="margin-top:15px;text-align:center;color:#2563eb;cursor:pointer;">
+Yeni İşletme Kaydı
+</p>
+
+</div>
+
+<div id="reg-form" style="display:none;">
+
+<input type="text" id="r-name" placeholder="İşletme Adı">
+
+<select id="r-type">
+<option value="market">Market / Bakkal</option>
+<option value="manav">Manav</option>
+<option value="restoran">Restoran / Kafe</option>
+<option value="teknikservis">Teknik Servis</option>
+</select>
+
+<input type="email" id="r-email" placeholder="E-posta">
+<input type="password" id="r-pass" placeholder="Şifre">
+
+<button class="btn btn-green" onclick="register()">Kayıt Ol</button>
+
+<p onclick="toggleForm(false)"
+style="margin-top:15px;text-align:center;color:#2563eb;cursor:pointer;">
+Girişe Dön
+</p>
+
+</div>
+
+</div>
+
 </div>
 
 <nav>
-    <div class="flex items-center gap-3">
-        <h2 id="display-biz-name" style="color:var(--accent)">EMS ERP</h2>
-        <span id="biz-type-badge" class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded">MOD</span>
-    </div>
-    <div class="text-[10px] font-bold text-slate-500">LICENSE: EMİRHAN BOZDAYI</div>
-    <button class="btn btn-blue" style="width:auto; margin:0; padding: 5px 15px;" onclick="logout()">Çıkış</button>
+
+<button onclick="showScreen('dashboard')">Panel</button>
+<button onclick="showScreen('pos')">POS</button>
+<button onclick="showScreen('products')">Ürün</button>
+<button onclick="showScreen('tables')">Masalar</button>
+<button onclick="showScreen('service')">Servis</button>
+<button onclick="showScreen('finance')">Finans</button>
+<button onclick="showScreen('staff')">Personel</button>
+<button onclick="showScreen('reports')">Rapor</button>
+<button onclick="logout()">Çıkış</button>
+
 </nav>
 
-<div class="flex flex-1 overflow-hidden">
-    <aside class="w-64 border-r border-slate-800 p-5 flex flex-col gap-2 bg-[#0d1117]">
-        <div onclick="switchTab('dash')" id="t-dash" class="sidebar-btn active">📊 Dashboard</div>
-        <div onclick="switchTab('pos')" id="t-pos" class="sidebar-btn">⚡ POS & Satış</div>
-        <div onclick="switchTab('tables')" id="t-tables" class="sidebar-btn">🪑 Masalar</div>
-        <div onclick="switchTab('stok')" id="t-stok" class="sidebar-btn">📦 Stok/Ürün</div>
-        <div onclick="switchTab('cari')" id="t-cari" class="sidebar-btn">👥 Cari Hesap</div>
-    </aside>
+<!-- DASHBOARD -->
 
-    <main class="flex-1 overflow-y-auto p-5">
-        
-        <section id="sec-dash" class="screen active">
-            <div class="grid grid-cols-3 gap-6">
-                <div class="bg-panel border border-slate-800 p-6 rounded-2xl">
-                    <p class="text-xs text-slate-500 font-bold">TOPLAM ALACAK</p>
-                    <h2 id="d-cari" class="text-3xl font-bold text-red-500">₺0.00</h2>
-                </div>
-                <div class="bg-panel border border-slate-800 p-6 rounded-2xl">
-                    <p class="text-xs text-slate-500 font-bold">AKTİF MASA</p>
-                    <h2 id="d-tables" class="text-3xl font-bold text-blue-500">0</h2>
-                </div>
-                <div id="terazi-indicator" class="bg-panel border border-slate-800 p-6 rounded-2xl">
-                    <p class="text-xs text-slate-500 font-bold">TERAZİ DURUMU</p>
-                    <h2 id="d-terazi" class="text-xl font-bold text-success">HAZIR</h2>
-                </div>
-            </div>
-        </section>
+<section id="dashboard" class="screen active">
 
-        <section id="sec-pos" class="screen">
-            <div class="flex gap-5 h-full">
-                <div class="flex-1 flex flex-col gap-3">
-                    <div id="interactive" class="w-full h-32 bg-black rounded-xl overflow-hidden relative border-2 border-accent"></div>
-                    <input type="text" id="barcode-in" placeholder="Barkod Okut veya Ürün Ara..." onchange="addToCart(this.value)">
-                    <div id="cart-list" class="flex-1 bg-panel border border-slate-800 rounded-xl p-4 overflow-y-auto">
-                        </div>
-                </div>
-                <div class="w-80 bg-panel border border-slate-800 p-6 rounded-xl flex flex-col justify-between">
-                    <h3 id="total-price" class="text-4xl font-bold text-success text-center">₺0.00</h3>
-                    <div class="flex flex-col gap-2">
-                        <button class="btn btn-green" onclick="completeSale('Nakit')">NAKİT</button>
-                        <button class="btn btn-blue" onclick="completeSale('Kart')">KREDİ KARTI</button>
-                        <button class="btn btn-red" onclick="openVeresiye()">VERESİYE</button>
-                    </div>
-                </div>
-            </div>
-        </section>
+<div class="card">
 
-        <section id="sec-tables" class="screen">
-            <div class="flex justify-between items-center mb-5">
-                <h3 class="font-bold text-xl">Masa Yerleşimi</h3>
-                <button onclick="addTable()" class="btn btn-blue w-auto px-5">+ Masa Ekle</button>
-            </div>
-            <div id="tables-container" class="product-grid"></div>
-        </section>
+<h2 id="biz-name">EMS ERP</h2>
 
-        <section id="sec-stok" class="screen">
-            <div class="flex justify-between items-center mb-5">
-                <h3 class="font-bold text-xl">Ürün & Stok Listesi</h3>
-                <button onclick="addProduct()" class="btn btn-blue w-auto px-5">+ Ürün Ekle</button>
-            </div>
-            <div id="stok-list" class="product-grid"></div>
-        </section>
+<p id="biz-type"></p>
 
-        <section id="sec-cari" class="screen">
-            <div class="flex justify-between items-center mb-5">
-                <h3 class="font-bold text-xl">Cari Rehber</h3>
-                <button onclick="addCari()" class="btn btn-blue w-auto px-5">+ Yeni Cari</button>
-            </div>
-            <div class="bg-panel border border-slate-800 rounded-xl overflow-hidden">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-800"><tr><th class="p-4">İsim</th><th class="p-4 text-right">Borç</th><th class="p-4 text-center">İşlem</th></tr></thead>
-                    <tbody id="cari-list"></tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+<div id="sector-badge"></div>
+
 </div>
 
+<div class="card">
+<h3>İstatistikler</h3>
+<p>Toplam Ürün: <span id="total-products">0</span></p>
+<p>Toplam Servis: <span id="total-services">0</span></p>
+<p>Toplam Masa: <span id="total-tables">0</span></p>
+</div>
+
+</section>
+
+<!-- POS -->
+
+<section id="pos" class="screen">
+
+<div class="card">
+
+<h3>Barkod POS Sistemi</h3>
+
+<div id="interactive"></div>
+
+<input id="barcode-input" placeholder="Barkod veya ürün adı">
+
+<button class="btn btn-green" onclick="addSale()">
+Satışa Ekle
+</button>
+
+<table class="table">
+
+<thead>
+<tr>
+<th>Ürün</th>
+<th>Fiyat</th>
+</tr>
+</thead>
+
+<tbody id="sale-list"></tbody>
+
+</table>
+
+<h2 style="margin-top:20px;">
+Toplam: <span id="total-price">0</span> TL
+</h2>
+
+</div>
+
+</section>
+
+<!-- ÜRÜNLER -->
+
+<section id="products" class="screen">
+
+<div class="card">
+
+<h3>Ürün Yönetimi</h3>
+
+<input id="p-name" placeholder="Ürün Adı">
+<input id="p-price" placeholder="Fiyat">
+<input id="p-stock" placeholder="Stok">
+<input id="p-barcode" placeholder="Barkod">
+
+<button class="btn btn-blue" onclick="addProduct()">
+Ürün Ekle
+</button>
+
+</div>
+
+<div class="card">
+
+<table class="table">
+
+<thead>
+<tr>
+<th>Ürün</th>
+<th>Fiyat</th>
+<th>Stok</th>
+</tr>
+</thead>
+
+<tbody id="product-table"></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+<!-- RESTORAN -->
+
+<section id="tables" class="screen">
+
+<div class="card">
+
+<h3>Masa Yönetimi</h3>
+
+<input id="table-name" placeholder="Masa Adı">
+
+<button class="btn btn-green" onclick="addTable()">
+Masa Ekle
+</button>
+
+<div id="table-list"></div>
+
+</div>
+
+</section>
+
+<!-- TEKNİK SERVİS -->
+
+<section id="service" class="screen">
+
+<div class="card">
+
+<h3>Teknik Servis Kayıt</h3>
+
+<input id="customer-name" placeholder="Müşteri">
+<input id="device-name" placeholder="Cihaz">
+<input id="problem" placeholder="Arıza">
+
+<button class="btn btn-blue" onclick="addService()">
+Servis Kaydı Aç
+</button>
+
+</div>
+
+<div class="card">
+
+<table class="table">
+
+<thead>
+<tr>
+<th>Müşteri</th>
+<th>Cihaz</th>
+<th>Durum</th>
+</tr>
+</thead>
+
+<tbody id="service-table"></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+<!-- FİNANS -->
+
+<section id="finance" class="screen">
+
+<div class="card">
+
+<h3>Gelir / Gider</h3>
+
+<input id="income" placeholder="Gelir">
+<button class="btn btn-green" onclick="addIncome()">
+Gelir Ekle
+</button>
+
+<input id="expense" placeholder="Gider">
+<button class="btn btn-red" onclick="addExpense()">
+Gider Ekle
+</button>
+
+</div>
+
+</section>
+
+<!-- PERSONEL -->
+
+<section id="staff" class="screen">
+
+<div class="card">
+
+<h3>Personel Yönetimi</h3>
+
+<input id="staff-name" placeholder="Personel Adı">
+
+<button class="btn btn-blue" onclick="addStaff()">
+Personel Ekle
+</button>
+
+<div id="staff-list"></div>
+
+</div>
+
+</section>
+
+<!-- RAPOR -->
+
+<section id="reports" class="screen">
+
+<div class="card">
+
+<h3>Rapor Sistemi</h3>
+
+<button class="btn btn-green" onclick="generateReport()">
+Günlük Rapor Oluştur
+</button>
+
+<div id="report-box"></div>
+
+</div>
+
+</section>
+
 <script>
-    // FIREBASE INITIALIZATION
-    const firebaseConfig = {
-        apiKey: "AIzaSyCkwCPXxUayvLclNMgC-6yk-m5STG_7NLI",
-        authDomain: "ems-pos-5b50b.firebaseapp.com",
-        projectId: "ems-pos-5b50b",
-        storageBucket: "ems-pos-5b50b.firebasestorage.app",
-        messagingSenderId: "444531568303",
-        appId: "1:444531568303:web:dba6979ace54e0aeae2e5a"
-    };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    let currentBizId = null;
-    let bizType = "";
+const firebaseConfig = {
+apiKey: "AIzaSyCkwCPXxUayvLclNMgC-6yk-m5STG_7NLI",
+authDomain: "ems-pos-5b50b.firebaseapp.com",
+projectId: "ems-pos-5b50b",
+storageBucket: "ems-pos-5b50b.firebasestorage.app",
+messagingSenderId: "444531568303",
+appId: "1:444531568303:web:dba6979ace54e0aeae2e5a"
+};
 
-    // AUTH (ORIGINAL)
-    function toggleForm(isReg) {
-        document.getElementById('login-form').style.display = isReg ? 'none' : 'block';
-        document.getElementById('reg-form').style.display = isReg ? 'block' : 'none';
-    }
+firebase.initializeApp(firebaseConfig);
 
-    function register() {
-        const email = document.getElementById('r-email').value;
-        const pass = document.getElementById('r-pass').value;
-        const name = document.getElementById('r-name').value;
-        const type = document.getElementById('r-type').value;
-        auth.createUserWithEmailAndPassword(email, pass).then(res => {
-            db.collection("isletmeler").doc(res.user.uid).set({
-                name: name, type: type, onayli: false, email: email
-            }).then(() => { alert("Onay Bekleyin."); auth.signOut(); location.reload(); });
-        });
-    }
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-    function login() {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('pass').value;
-        auth.signInWithEmailAndPassword(email, pass).then(res => {
-            db.collection("isletmeler").doc(res.user.uid).get().then(doc => {
-                if(doc.exists && doc.data().onayli) {
-                    currentBizId = res.user.uid;
-                    bizType = doc.data().type;
-                    document.getElementById('auth-screen').style.display = 'none';
-                    document.getElementById('display-biz-name').innerText = doc.data().name;
-                    document.getElementById('biz-type-badge').innerText = bizType.toUpperCase();
-                    initERP();
-                } else { alert("Yetki Bekleniyor!"); auth.signOut(); }
-            });
-        });
-    }
+let currentUser = null;
+let total = 0;
 
-    // ERP CORE
-    function initERP() {
-        syncTables();
-        syncStok();
-        syncCari();
-        startScanner();
-    }
+function toggleForm(isReg){
 
-    function switchTab(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('sec-' + id).classList.add('active');
-        document.getElementById('t-' + id).classList.add('active');
-    }
+document.getElementById('login-form').style.display =
+isReg ? 'none' : 'block';
 
-    // TABLES (RESTAURANT)
-    function syncTables() {
-        db.collection("isletmeler").doc(currentBizId).collection("masalar").onSnapshot(snap => {
-            const container = document.getElementById('tables-container');
-            container.innerHTML = "";
-            let active = 0;
-            snap.forEach(doc => {
-                const m = doc.data();
-                if(m.tutar > 0) active++;
-                container.innerHTML += `
-                    <div class="table-card ${m.tutar > 0 ? 'occupied' : ''}" onclick="manageTable('${doc.id}', ${m.tutar})">
-                        <p class="font-bold">${m.no}</p>
-                        <p class="text-xs text-slate-500">${m.tutar > 0 ? '₺' + m.tutar : 'Boş'}</p>
-                    </div>`;
-            });
-            document.getElementById('d-tables').innerText = active;
-        });
-    }
+document.getElementById('reg-form').style.display =
+isReg ? 'block' : 'none';
 
-    function addTable() {
-        const no = prompt("Masa Adı:");
-        if(no) db.collection("isletmeler").doc(currentBizId).collection("masalar").add({ no: no, tutar: 0 });
-    }
+}
 
-    function manageTable(id, tutar) {
-        const ekle = prompt("Masa Hesabı Ekle/Kapat (Miktar):");
-        if(ekle) db.collection("isletmeler").doc(currentBizId).collection("masalar").doc(id).update({ tutar: parseFloat(ekle) });
-        else if(confirm("Hesabı Kapat?")) db.collection("isletmeler").doc(currentBizId).collection("masalar").doc(id).update({ tutar: 0 });
-    }
+function register(){
 
-    // STOK & CARI
-    function syncStok() {
-        db.collection("isletmeler").doc(currentBizId).collection("stok").onSnapshot(snap => {
-            const list = document.getElementById('stok-list');
-            list.innerHTML = "";
-            snap.forEach(doc => {
-                const s = doc.data();
-                list.innerHTML += `<div class="product-card"><b>${s.ad}</b><br><small>${s.fiyat} TL</small></div>`;
-            });
-        });
-    }
+const email=document.getElementById('r-email').value;
+const pass=document.getElementById('r-pass').value;
+const name=document.getElementById('r-name').value;
+const type=document.getElementById('r-type').value;
 
-    function syncCari() {
-        db.collection("isletmeler").doc(currentBizId).collection("cariler").onSnapshot(snap => {
-            const list = document.getElementById('cari-list');
-            list.innerHTML = "";
-            let total = 0;
-            snap.forEach(doc => {
-                const c = doc.data();
-                total += parseFloat(c.borc || 0);
-                list.innerHTML += `<tr class="border-b border-slate-800"><td class="p-4 font-bold">${c.isim}</td><td class="p-4 text-right text-red-500 font-bold">₺${c.borc}</td><td class="p-4 text-center"><button onclick="tahsilat('${doc.id}', ${c.borc})" class="text-blue-400">Tahsilat</button></td></tr>`;
-            });
-            document.getElementById('d-cari').innerText = "₺" + total.toLocaleString();
-        });
-    }
+if(!email || !pass || !name){
+alert("Alanları doldurun");
+return;
+}
 
-    function addCari() {
-        const isim = prompt("İsim:");
-        if(isim) db.collection("isletmeler").doc(currentBizId).collection("cariler").add({ isim: isim, borc: 0 });
-    }
+auth.createUserWithEmailAndPassword(email,pass)
 
-    function tahsilat(id, old) {
-        const m = prompt("Miktar:");
-        if(m) db.collection("isletmeler").doc(currentBizId).collection("cariler").doc(id).update({ borc: old - parseFloat(m) });
-    }
+.then(res=>{
 
-    function startScanner() {
-        Quagga.init({
-            inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#interactive'), constraints: { facingMode: "environment" } },
-            decoder: { readers: bizType === "market" || bizType === "manav" ? ["ean_reader", "code_128_reader"] : [] }
-        }, err => { if(!err) Quagga.start(); });
-    }
+db.collection("isletmeler")
+.doc(res.user.uid)
+.set({
+name:name,
+type:type,
+onayli:false,
+email:email,
+kayitTarihi:new Date().toISOString()
+})
 
-    function logout() { auth.signOut().then(() => location.reload()); }
+.then(()=>{
+
+alert("Kayıt başarılı. Onay bekleniyor.");
+
+auth.signOut();
+
+location.reload();
+
+});
+
+})
+
+.catch(err=>alert(err.message));
+
+}
+
+function login(){
+
+const email=document.getElementById('email').value;
+const pass=document.getElementById('pass').value;
+
+auth.signInWithEmailAndPassword(email,pass)
+
+.then(res=>{
+
+db.collection("isletmeler")
+.doc(res.user.uid)
+.get()
+
+.then(doc=>{
+
+if(doc.exists && doc.data().onayli===true){
+
+currentUser=res.user.uid;
+
+document.getElementById('auth-screen').style.display='none';
+
+document.getElementById('biz-name').innerText =
+doc.data().name;
+
+document.getElementById('biz-type').innerText =
+"İşletme Türü: " + doc.data().type.toUpperCase();
+
+setupSector(doc.data().type);
+
+startScanner();
+
+loadProducts();
+
+loadServices();
+
+loadTables();
+
+}else{
+
+alert("Hesap onaylanmamış");
+
+auth.signOut();
+
+}
+
+});
+
+})
+
+.catch(err=>alert(err.message));
+
+}
+
+function setupSector(type){
+
+let text="";
+
+if(type==="market") text="MARKET MODU";
+if(type==="manav") text="MANAV MODU";
+if(type==="restoran") text="RESTORAN MODU";
+if(type==="teknikservis") text="TEKNİK SERVİS MODU";
+
+document.getElementById('sector-badge').innerHTML =
+'<div class="badge">'+text+'</div>';
+
+}
+
+function startScanner(){
+
+Quagga.init({
+
+inputStream:{
+name:"Live",
+type:"LiveStream",
+target:document.querySelector('#interactive')
+},
+
+decoder:{
+readers:["ean_reader","code_128_reader"]
+}
+
+},
+
+err=>{
+
+if(err){
+console.log(err);
+return;
+}
+
+Quagga.start();
+
+});
+
+Quagga.onDetected(data=>{
+
+document.getElementById('barcode-input').value =
+data.codeResult.code;
+
+});
+
+}
+
+function addSale(){
+
+const code=document.getElementById('barcode-input').value;
+
+if(!code) return;
+
+total += 100;
+
+document.getElementById('sale-list').innerHTML += `
+<tr>
+<td>${code}</td>
+<td>100 TL</td>
+</tr>
+`;
+
+document.getElementById('total-price').innerText=total;
+
+document.getElementById('barcode-input').value='';
+
+}
+
+function addProduct(){
+
+const name=document.getElementById('p-name').value;
+const price=document.getElementById('p-price').value;
+const stock=document.getElementById('p-stock').value;
+const barcode=document.getElementById('p-barcode').value;
+
+db.collection("urunler").add({
+uid:currentUser,
+name,
+price,
+stock,
+barcode
+})
+
+.then(()=>{
+
+alert("Ürün eklendi");
+
+loadProducts();
+
+});
+
+}
+
+function loadProducts(){
+
+db.collection("urunler")
+.where("uid","==",currentUser)
+.get()
+
+.then(snap=>{
+
+let html='';
+
+document.getElementById('total-products').innerText =
+snap.size;
+
+snap.forEach(doc=>{
+
+const d=doc.data();
+
+html += `
+<tr>
+<td>${d.name}</td>
+<td>${d.price} TL</td>
+<td>${d.stock}</td>
+</tr>
+`;
+
+});
+
+document.getElementById('product-table').innerHTML=html;
+
+});
+
+}
+
+function addTable(){
+
+const name=document.getElementById('table-name').value;
+
+db.collection("masalar").add({
+uid:currentUser,
+name:name,
+status:"BOŞ"
+})
+
+.then(()=>{
+
+loadTables();
+
+});
+
+}
+
+function loadTables(){
+
+db.collection("masalar")
+.where("uid","==",currentUser)
+.get()
+
+.then(snap=>{
+
+document.getElementById('total-tables').innerText =
+snap.size;
+
+let html='';
+
+snap.forEach(doc=>{
+
+const d=doc.data();
+
+html += `
+<div class="card">
+${d.name} - ${d.status}
+</div>
+`;
+
+});
+
+document.getElementById('table-list').innerHTML=html;
+
+});
+
+}
+
+function addService(){
+
+const customer=document.getElementById('customer-name').value;
+const device=document.getElementById('device-name').value;
+const problem=document.getElementById('problem').value;
+
+db.collection("servisler").add({
+uid:currentUser,
+customer,
+device,
+problem,
+status:"Bekliyor"
+})
+
+.then(()=>{
+
+loadServices();
+
+});
+
+}
+
+function loadServices(){
+
+db.collection("servisler")
+.where("uid","==",currentUser)
+.get()
+
+.then(snap=>{
+
+document.getElementById('total-services').innerText =
+snap.size;
+
+let html='';
+
+snap.forEach(doc=>{
+
+const d=doc.data();
+
+html += `
+<tr>
+<td>${d.customer}</td>
+<td>${d.device}</td>
+<td>${d.status}</td>
+</tr>
+`;
+
+});
+
+document.getElementById('service-table').innerHTML=html;
+
+});
+
+}
+
+function addIncome(){
+
+alert("Gelir eklendi");
+
+}
+
+function addExpense(){
+
+alert("Gider eklendi");
+
+}
+
+function addStaff(){
+
+const name=document.getElementById('staff-name').value;
+
+document.getElementById('staff-list').innerHTML += `
+<div class="card">${name}</div>
+`;
+
+}
+
+function generateReport(){
+
+document.getElementById('report-box').innerHTML = `
+<div class="card">
+Bugünkü satış toplamı: ${total} TL
+</div>
+`;
+
+}
+
+function showScreen(id){
+
+document.querySelectorAll('.screen').forEach(s=>{
+s.classList.remove('active');
+});
+
+document.getElementById(id).classList.add('active');
+
+}
+
+function logout(){
+
+auth.signOut()
+.then(()=>location.reload());
+
+}
+
 </script>
+
 </body>
 </html>
